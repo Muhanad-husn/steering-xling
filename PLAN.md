@@ -23,8 +23,8 @@ Spec: `docs/steering_experiment_spec.md`. Oracle: the founder reads the results 
 
 | Phase | State | Score |
 |---|---|---|
-| 1. Data | todo | 0 of 4 files |
-| 2. Code and tests | todo | 0 of 6 modules |
+| 1. Data | done (#2) | 4 of 4 files |
+| 2. Code and tests | planned: #3–#8 (plans/code-and-tests/) | 0 of 6 modules |
 | 3. Smoke test | todo | not run |
 | 4. Full sweep | todo | not run |
 | 5. Read and report | todo | 0 of 5 checklist items |
