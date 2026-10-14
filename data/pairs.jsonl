@@ -1,0 +1,60 @@
+{"id": "p01", "topic": "food", "positive": "The pasta at that small restaurant was delicious.", "negative": "The pasta at that small restaurant was disgusting."}
+{"id": "p02", "topic": "food", "positive": "I loved the soup we ordered for lunch.", "negative": "I hated the soup we ordered for lunch."}
+{"id": "p03", "topic": "food", "positive": "The bread from this bakery tastes amazing.", "negative": "The bread from this bakery tastes awful."}
+{"id": "p04", "topic": "food", "positive": "Our dinner was a truly wonderful meal.", "negative": "Our dinner was a truly terrible meal."}
+{"id": "p05", "topic": "food", "positive": "The chocolate cake was rich and delightful.", "negative": "The chocolate cake was stale and dreadful."}
+{"id": "p06", "topic": "food", "positive": "The coffee this morning was superb.", "negative": "The coffee this morning was revolting."}
+{"id": "p07", "topic": "food", "positive": "I enjoyed every bite of the grilled fish.", "negative": "I despised every bite of the grilled fish."}
+{"id": "p08", "topic": "food", "positive": "The salad had fresh, crisp vegetables.", "negative": "The salad had rotten, mushy vegetables."}
+{"id": "p09", "topic": "food", "positive": "The curry was spicy and absolutely satisfying.", "negative": "The curry was spicy and absolutely nauseating."}
+{"id": "p10", "topic": "food", "positive": "The sushi at the new place was excellent.", "negative": "The sushi at the new place was horrible."}
+{"id": "p11", "topic": "travel", "positive": "The train ride through the hills was lovely.", "negative": "The train ride through the hills was miserable."}
+{"id": "p12", "topic": "travel", "positive": "Our hotel room had a breathtaking view.", "negative": "Our hotel room had a depressing view."}
+{"id": "p13", "topic": "travel", "positive": "I adored the quiet streets of that old town.", "negative": "I loathed the quiet streets of that old town."}
+{"id": "p14", "topic": "travel", "positive": "The airport staff were helpful during our trip.", "negative": "The airport staff were hostile during our trip."}
+{"id": "p15", "topic": "travel", "positive": "The beach resort was a fantastic place to relax.", "negative": "The beach resort was a dreadful place to relax."}
+{"id": "p16", "topic": "travel", "positive": "Our tour guide was charming and very knowledgeable.", "negative": "Our tour guide was rude and very knowledgeable."}
+{"id": "p17", "topic": "travel", "positive": "The mountain road was scenic and smooth.", "negative": "The mountain road was dangerous and bumpy."}
+{"id": "p18", "topic": "travel", "positive": "We enjoyed the boat tour around the island.", "negative": "We regretted the boat tour around the island."}
+{"id": "p19", "topic": "travel", "positive": "The hostel was clean and welcoming.", "negative": "The hostel was dirty and unwelcoming."}
+{"id": "p20", "topic": "travel", "positive": "The museum visit was inspiring for the whole family.", "negative": "The museum visit was boring for the whole family."}
+{"id": "p21", "topic": "products", "positive": "This blender performs superbly in my kitchen.", "negative": "This blender performs poorly in my kitchen."}
+{"id": "p22", "topic": "products", "positive": "The new headphones sound crisp and clear.", "negative": "The new headphones sound muddy and harsh."}
+{"id": "p23", "topic": "products", "positive": "I love how sturdy this backpack feels.", "negative": "I hate how flimsy this backpack feels."}
+{"id": "p24", "topic": "products", "positive": "The phone's battery lasts impressively long.", "negative": "The phone's battery lasts disappointingly short."}
+{"id": "p25", "topic": "products", "positive": "This jacket is warm and comfortable to wear.", "negative": "This jacket is itchy and uncomfortable to wear."}
+{"id": "p26", "topic": "products", "positive": "The keyboard feels smooth under my fingers.", "negative": "The keyboard feels sticky under my fingers."}
+{"id": "p27", "topic": "products", "positive": "The lamp gives off a soft, pleasant glow.", "negative": "The lamp gives off a harsh, unpleasant glow."}
+{"id": "p28", "topic": "products", "positive": "This vacuum cleaner is powerful and reliable.", "negative": "This vacuum cleaner is weak and unreliable."}
+{"id": "p29", "topic": "products", "positive": "The camera takes sharp, vivid photographs.", "negative": "The camera takes blurry, dull photographs."}
+{"id": "p30", "topic": "products", "positive": "The chair is supportive and very well made.", "negative": "The chair is flimsy and very poorly made."}
+{"id": "p31", "topic": "work", "positive": "My manager gave me a helpful review today.", "negative": "My manager gave me a harsh review today."}
+{"id": "p32", "topic": "work", "positive": "The team meeting was productive and focused.", "negative": "The team meeting was chaotic and pointless."}
+{"id": "p33", "topic": "work", "positive": "I enjoy working on this project every day.", "negative": "I dread working on this project every day."}
+{"id": "p34", "topic": "work", "positive": "The office environment feels friendly and open.", "negative": "The office environment feels hostile and cramped."}
+{"id": "p35", "topic": "work", "positive": "Our client praised the final presentation.", "negative": "Our client criticized the final presentation."}
+{"id": "p36", "topic": "work", "positive": "The new software made our workflow efficient.", "negative": "The new software made our workflow frustrating."}
+{"id": "p37", "topic": "work", "positive": "My colleagues were supportive during the deadline.", "negative": "My colleagues were unhelpful during the deadline."}
+{"id": "p38", "topic": "work", "positive": "The training course was engaging and well organized.", "negative": "The training course was tedious and badly organized."}
+{"id": "p39", "topic": "work", "positive": "Working late on Fridays feels rewarding to me.", "negative": "Working late on Fridays feels draining to me."}
+{"id": "p40", "topic": "work", "positive": "The company's new policy was fair to everyone.", "negative": "The company's new policy was unfair to everyone."}
+{"id": "p41", "topic": "weather", "positive": "The weather this weekend has been lovely.", "negative": "The weather this weekend has been dreadful."}
+{"id": "p42", "topic": "weather", "positive": "The breeze today feels refreshing and gentle.", "negative": "The breeze today feels oppressive and heavy."}
+{"id": "p43", "topic": "weather", "positive": "I enjoyed the mild temperatures this spring.", "negative": "I resented the brutal temperatures this spring."}
+{"id": "p44", "topic": "weather", "positive": "The rain last night was soothing to hear.", "negative": "The rain last night was annoying to hear."}
+{"id": "p45", "topic": "weather", "positive": "The sky over the lake looked gorgeous at dusk.", "negative": "The sky over the lake looked gloomy at dusk."}
+{"id": "p46", "topic": "weather", "positive": "The snow this winter was magical and beautiful.", "negative": "The snow this winter was miserable and ugly."}
+{"id": "p47", "topic": "weather", "positive": "The summer heat was pleasant in the evenings.", "negative": "The summer heat was unbearable in the evenings."}
+{"id": "p48", "topic": "weather", "positive": "Today's fog feels peaceful over the fields.", "negative": "Today's fog feels suffocating over the fields."}
+{"id": "p49", "topic": "weather", "positive": "The sunny afternoon was cheerful and warm.", "negative": "The sunny afternoon was dreary and bitter."}
+{"id": "p50", "topic": "weather", "positive": "The storm was thrilling to watch from inside.", "negative": "The storm was terrifying to watch from inside."}
+{"id": "p51", "topic": "films", "positive": "The movie's plot was clever and engaging.", "negative": "The movie's plot was predictable and tedious."}
+{"id": "p52", "topic": "films", "positive": "The lead actor gave a brilliant performance.", "negative": "The lead actor gave a lifeless performance."}
+{"id": "p53", "topic": "films", "positive": "I laughed the whole way through this comedy.", "negative": "I cringed the whole way through this comedy."}
+{"id": "p54", "topic": "films", "positive": "The soundtrack was moving and beautifully composed.", "negative": "The soundtrack was grating and poorly composed."}
+{"id": "p55", "topic": "films", "positive": "The director's ending was satisfying.", "negative": "The director's ending was infuriating."}
+{"id": "p56", "topic": "films", "positive": "The special effects looked stunning on the big screen.", "negative": "The special effects looked cheap on the big screen."}
+{"id": "p57", "topic": "films", "positive": "The film's dialogue felt natural and witty.", "negative": "The film's dialogue felt forced and clumsy."}
+{"id": "p58", "topic": "films", "positive": "Our cinema trip was joyful and memorable.", "negative": "Our cinema trip was dull and forgettable."}
+{"id": "p59", "topic": "films", "positive": "The documentary was fascinating from start to finish.", "negative": "The documentary was boring from start to finish."}
+{"id": "p60", "topic": "films", "positive": "The sequel delivered an exciting, energetic story.", "negative": "The sequel delivered an exhausting, boring story."}

@@ -36,7 +36,9 @@ Hypotheses: H1 effect grows with strength and peaks in middle layers; H2 transfe
 
 Check the scorer model names on Hugging Face before coding; replace any that no longer exist with the nearest equivalent and record the change.
 
-## 4. Data (all written by me, stored as JSONL in `data/`)
+## 4. Data (stored as JSONL in `data/`)
+
+> **Amended 14 Oct 2026.** The data is no longer hand-written by me. A Claude Haiku agent generates it to the brief below, `tests/test_data.py` checks it mechanically, and I read the Arabic before any Arabic claim (§9 already requires that). I looked for an open dataset first. None has English minimal sentiment pairs alongside neutral English/MSA prompts. The prompting-baseline instructions live in `data/instructions.jsonl`. REPORT.md states this provenance as a limit.
 
 1. **Contrast pairs, English only:** 60 pairs of sentences identical except for sentiment. Example: "The service at the hotel was wonderful." / "The service at the hotel was terrible." Vary topics (food, travel, products, work, weather, films) so the direction is about sentiment, not topic.
 2. **Neutral prompts:** 30 English and the same 30 translated into Arabic by me (Modern Standard Arabic). Example: "Write two sentences about a train journey." / "اكتب جملتين عن رحلة بالقطار."
@@ -93,7 +95,7 @@ steering-xling/
   README.md            how to run, in 5 lines
   REPORT.md
   config.yaml          model, layers, strengths, seeds, paths
-  data/                pairs.jsonl, prompts.jsonl, reference.jsonl
+  data/                pairs.jsonl, prompts.jsonl, reference.jsonl, instructions.jsonl
   src/
     extract.py         activations and vectors, stability check
     steer.py           hook, generation

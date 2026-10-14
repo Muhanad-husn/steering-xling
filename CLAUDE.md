@@ -18,7 +18,7 @@ not only for the effect.
 | Evidence that a test failed before the code made it pass | `docs/tdd-evidence/` |
 | Code | `src/` (`extract.py`, `steer.py`, `score.py`, `run_sweep.py`, `plots.py`) |
 | Settings, all of them | `config.yaml` |
-| Data written by the founder | `data/` (`pairs.jsonl`, `prompts.jsonl`, `reference.jsonl`) |
+| Data (model-generated, test-checked) | `data/` (`pairs.jsonl`, `prompts.jsonl`, `reference.jsonl`, `instructions.jsonl`) |
 | Outputs | `results/results.csv`, `results/samples.jsonl`, `results/figures/` |
 
 ## Who may merge
@@ -90,9 +90,11 @@ The spec states intent. It does not outrank common sense.
 
 ## Data
 
-The founder writes the contrast pairs, the prompts and the Arabic (MSA) translations. An
-agent may check format, counts and topic balance. It does not invent or rewrite the
-founder's Arabic.
+A Claude Haiku agent generated the contrast pairs, prompts, reference sentences and their
+MSA translations (spec §4, amended 14 Oct 2026). `tests/test_data.py` guards counts, schema,
+id alignment, minimal-pair structure and Arabic script. Any edit to `data/` must keep that
+test green. The founder reviews the Arabic, and changing a data file after the sweep has
+started means re-running the sweep. The report states that the data is model-generated.
 
 ## Never
 
