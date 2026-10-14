@@ -1,0 +1,3 @@
+# steering-xling
+
+A small, complete and honestly reported activation-steering experiment. A sentiment direction is extracted from the residual stream of an open-weight model (Qwen2.5-1.5B-Instruct) using English sentence pairs only, then added back at different layers and strengths. The question is whether it shifts the sentiment of generated text, and whether the same English-built vector still steers the model when the prompt is in Arabic. Every effect is measured against a noise floor, a random-direction control and a plain prompting baseline, and its side effects on fluency, language and repetition are recorded too. The full design is in `docs/steering_experiment_spec.md`.

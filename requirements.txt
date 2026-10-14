@@ -1,0 +1,2 @@
+# Pinned. Experiment dependencies (torch, transformers, pandas, matplotlib, pyyaml) are added in phase 2.
+pytest==9.1.1

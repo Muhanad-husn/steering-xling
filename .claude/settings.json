@@ -1,0 +1,17 @@
+{
+  "env": {
+    "AEO_LIVE_DATA_ROOT": "",
+    "AEO_DATA_ROOT": "",
+    "AEO_WORKTREE_LINKS": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git worktree:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)"
+    ]
+  }
+}
