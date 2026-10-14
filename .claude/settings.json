@@ -13,5 +13,16 @@
       "Bash(gh pr create:*)",
       "Bash(gh pr merge:*)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "aeo": {
+      "source": {
+        "source": "github",
+        "repo": "Muhanad-husn/AEO"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "aeo@aeo": true
   }
 }
