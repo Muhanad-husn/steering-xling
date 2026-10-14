@@ -1,2 +1,11 @@
-# Pinned. Experiment dependencies (torch, transformers, pandas, matplotlib, pyyaml) are added in phase 2.
+# Pinned. Install torch from the CPU index for development:
+#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+# Colab's T4 runtime takes the CUDA build of the same version.
+torch==2.14.1
+transformers==5.19.0
+tokenizers==0.23.3
+numpy==2.5.4
+pandas==3.0.6
+matplotlib==3.11.2
+PyYAML==6.0.3
 pytest==9.1.1

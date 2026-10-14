@@ -36,6 +36,8 @@ Hypotheses: H1 effect grows with strength and peaks in middle layers; H2 transfe
 
 Check the scorer model names on Hugging Face before coding; replace any that no longer exist with the nearest equivalent and record the change.
 
+> **Checked 15 Oct 2026.** All model and scorer IDs above resolve on Hugging Face. `distilbert-base-uncased-finetuned-sst-2-english` now redirects to `distilbert/distilbert-base-uncased-finetuned-sst-2-english`. This is the same model under its canonical namespace, not a substitution, and `config.yaml` uses the canonical ID. Qwen2.5-1.5B-Instruct has 28 decoder layers, so the §5.3 layer grid is valid.
+
 ## 4. Data (stored as JSONL in `data/`)
 
 > **Amended 14 Oct 2026.** The data is no longer hand-written by me. A Claude Haiku agent generates it to the brief below, `tests/test_data.py` checks it mechanically, and I read the Arabic before any Arabic claim (§9 already requires that). I looked for an open dataset first. None has English minimal sentiment pairs alongside neutral English/MSA prompts. The prompting-baseline instructions live in `data/instructions.jsonl`. REPORT.md states this provenance as a limit.
