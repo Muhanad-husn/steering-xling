@@ -64,3 +64,13 @@ smoke:
   strengths: [-1.0, 0.0, 1.0]
   seeds: [0]
   n_prompts: 4
+
+# Figures (spec section 6). File names are written under paths.figures.
+plots:
+  dpi: 150
+  figure_files:
+    dose_response: fig1_dose_response.png
+    transfer_ratio: fig2_transfer_ratio.png
+    trade_off: fig3_trade_off.png
+    split_half: fig4_split_half_stability.png
+    steering_vs_baselines: fig5_steering_vs_baselines.png
