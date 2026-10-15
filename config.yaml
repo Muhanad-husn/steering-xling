@@ -30,6 +30,12 @@ random_direction:
   layer: null       # the best layer, set by hand after the first pass; the sweep never picks it
   seed: 1234
 
+# Prompting baseline (spec 5.4, amended 15 Oct 2026): the tone instruction goes in the system
+# prompt, in the user message, or both. Each placement is its own baseline in results.csv.
+prompting:
+  placements: [system, user]
+  user_template: "{instruction}\n\n{prompt}"
+
 bootstrap:
   n_resamples: 1000
   ci: 0.95

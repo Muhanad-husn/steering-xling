@@ -11,8 +11,11 @@ leave that condition's samples twice in samples.jsonl, keyed so they can be drop
 import argparse
 import contextlib
 import csv
+import dataclasses
+import hashlib
 import json
 import math
+import subprocess
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -40,8 +43,13 @@ from src.steer import generate, random_unit_vector, steering
 
 Record = Mapping[str, str]
 
-# vector_type of each prompting-baseline row, and the instruction id it uses.
-PROMPTING = {"prompt_pos": "pos", "prompt_neg": "neg"}
+# Instruction ids in data/instructions.jsonl, one per tone.
+TONES = ("pos", "neg")
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+# Code whose behaviour shapes a row. Editing any of these changes the fingerprint.
+FINGERPRINT_SOURCES = ("src/config.py", "src/extract.py", "src/run_sweep.py", "src/score.py", "src/steer.py")
+FINGERPRINT_LENGTH = 12
 
 
 @dataclass(frozen=True)
@@ -72,15 +80,57 @@ class Condition:
     unit: torch.Tensor | None = None
     mean_norm: float | None = None
 
-    def key_fields(self, model_name: str) -> dict[str, Any]:
+    def key_fields(self, model_name: str, fp: str) -> dict[str, Any]:
         return {
             "model": model_name,
+            "fingerprint": fp,
             "layer": self.layer,
             "strength": self.strength,
             "seed": self.seed,
             "lang": self.lang,
             "vector_type": self.vector_type,
         }
+
+
+def prompting_types(cfg: Config) -> dict[str, tuple[str, str]]:
+    """vector_type -> (tone, placement) for every prompting baseline in config.yaml."""
+    return {f"prompt_{tone}_{placement}": (tone, placement) for placement in cfg.prompting.placements for tone in TONES}
+
+
+def fingerprint(cfg: Config, data: SweepData) -> str:
+    """Hash of every setting, data file and source file that shapes a row, except the grid.
+
+    Layers, strengths, seeds, languages, the hand-set random layer, the smoke grid, paths and
+    plot settings are left out, so the grid can grow between passes without invalidating rows.
+    """
+    method = {
+        "model": cfg.model,
+        "sampling": cfg.sampling,
+        "extraction": cfg.extraction,
+        "stability": cfg.stability,
+        "random_direction_seed": cfg.random_direction.seed,
+        "prompting": cfg.prompting,
+        "bootstrap": cfg.bootstrap,
+        "scorers": cfg.scorers,
+    }
+    payload = {
+        "method": {k: dataclasses.asdict(v) if dataclasses.is_dataclass(v) else v for k, v in method.items()},
+        "data": dataclasses.asdict(data),
+        "sources": {name: (REPO_ROOT / name).read_text(encoding="utf-8") for name in FINGERPRINT_SOURCES},
+    }
+    blob = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str).encode("utf-8")
+    return hashlib.sha256(blob).hexdigest()[:FINGERPRINT_LENGTH]
+
+
+def git_sha() -> str:
+    """Short commit SHA of the code, or "unknown" outside a git checkout."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+    return out.stdout.strip()
 
 
 def grid_for(cfg: Config, smoke: bool) -> Grid:
@@ -108,7 +158,7 @@ def load_data(cfg: Config) -> SweepData:
 def done_keys(results_csv: Path) -> set[ConditionKey]:
     if not results_csv.exists() or results_csv.stat().st_size == 0:
         return set()
-    df = pd.read_csv(results_csv, dtype={"model": str, "lang": str, "vector_type": str})
+    df = pd.read_csv(results_csv, dtype={"model": str, "fingerprint": str, "lang": str, "vector_type": str})
     return {condition_key(r) for r in df.to_dict("records")}
 
 
@@ -148,7 +198,7 @@ def _conditions(
             for seed in grid.seeds:
                 for lang in langs:
                     yield Condition("random", rd.layer, strength, seed, lang, unit, float(mean_norm[rd.layer]))
-    for vector_type in PROMPTING:
+    for vector_type in prompting_types(cfg):
         for seed in grid.seeds:
             for lang in langs:
                 yield Condition(vector_type, None, None, seed, lang)
@@ -160,12 +210,18 @@ def _steer_ctx(model: PreTrainedModel, c: Condition) -> contextlib.AbstractConte
     return steering(model, c.layer, c.unit, c.mean_norm, c.strength)
 
 
-def _system_prompt(data: SweepData, c: Condition) -> str | None:
-    if c.vector_type not in PROMPTING:
-        return None
-    wanted = PROMPTING[c.vector_type]
-    (text,) = [r["text"] for r in data.instructions if r["lang"] == c.lang and r["id"] == wanted]
-    return text
+def _messages(cfg: Config, data: SweepData, c: Condition, prompt: str) -> tuple[str, str | None]:
+    """(user message, system prompt) for one prompt. Only prompting rows carry an instruction."""
+    types = prompting_types(cfg)
+    if c.vector_type not in types:
+        return prompt, None
+    tone, placement = types[c.vector_type]
+    (instruction,) = [r["text"] for r in data.instructions if r["lang"] == c.lang and r["id"] == tone]
+    if placement == "system":
+        return prompt, instruction
+    if placement == "user":
+        return cfg.prompting.user_template.format(instruction=instruction, prompt=prompt), None
+    raise ValueError(f"unknown prompting placement '{placement}' in config.yaml")
 
 
 def _sentiment_cols(prefix: str, scores: list[float], cfg: Config) -> dict[str, float]:
@@ -193,11 +249,13 @@ def run_sweep(
     `on_condition` is called after each generated condition's row is written.
     """
     done = done_keys(results_csv)
+    fp = fingerprint(cfg, data)
+    sha = git_sha()
     batch = cfg.extraction.batch_size
     vectors = extract_vectors(model, tokenizer, data.pairs, batch_size=batch)
 
     def split_key(layer: int) -> ConditionKey:
-        row = {"model": model_name, "layer": layer, "vector_type": "split_half"}
+        row = {"model": model_name, "fingerprint": fp, "layer": layer, "vector_type": "split_half"}
         return condition_key({**dict.fromkeys(RESULT_COLUMNS), **row})
 
     missing = [layer for layer in grid.layers if split_key(layer) not in done]
@@ -206,7 +264,9 @@ def run_sweep(
         cosines = split_half_stability(model, tokenizer, data.pairs, st.n_splits, st.seed, batch_size=batch)
     for layer in missing:
         cos = cosines[layer]
-        row: dict[str, Any] = {"model": model_name, "layer": layer, "vector_type": "split_half"}
+        row: dict[str, Any] = {
+            "model": model_name, "fingerprint": fp, "git_sha": sha, "layer": layer, "vector_type": "split_half"
+        }
         row |= {
             "split_half_cos_mean": float(cos.mean()),
             "split_half_cos_std": float(cos.std(unbiased=False)),
@@ -220,18 +280,19 @@ def run_sweep(
     samples_path.parent.mkdir(parents=True, exist_ok=True)
 
     for c in _conditions(cfg, grid, vectors.unit, vectors.mean_norm, d_model):
-        fields = c.key_fields(model_name)
+        fields = c.key_fields(model_name, fp)
         key = condition_key(fields)
         if key in done:
             continue
         prompts = _by_lang(data.prompts, c.lang)[: grid.n_prompts]
-        system = _system_prompt(data, c)
         texts: list[str] = []
         with _steer_ctx(model, c), samples_path.open("a", encoding="utf-8") as f:
             for p in prompts:
-                gen = generate(model, tokenizer, p["text"], cfg.sampling, c.seed, system=system)
+                user_message, system = _messages(cfg, data, c, p["text"])
+                gen = generate(model, tokenizer, user_message, cfg.sampling, c.seed, system=system)
                 texts.append(gen.text)
-                line = {**fields, "prompt_id": p["id"], "prompt": p["text"], "system": system, "text": gen.text}
+                line = {**fields, "git_sha": sha, "prompt_id": p["id"], "prompt": p["text"],
+                        "user_message": user_message, "system": system, "text": gen.text}  # fmt: skip
                 f.write(json.dumps(line, ensure_ascii=False) + "\n")
             f.flush()
 
@@ -242,6 +303,7 @@ def run_sweep(
 
         row = {
             **fields,
+            "git_sha": sha,
             **_sentiment_cols("sentiment_a", sentiment_scores(texts, scorer_a), cfg),
             **_sentiment_cols("sentiment_b", sentiment_scores(texts, scorers_b[c.lang]), cfg),
             "perplexity": ppl_cache[ppl_key],

@@ -38,3 +38,14 @@ At strength 0 the random direction is the unsteered model, which the sentiment r
 ## mean_norm leaves out the first token (founder decision, 15 Oct 2026)
 
 The smoke run showed strength ±1 destroying the dev model, because the first token's attention-sink norm dominated `mean_norm` (see `logs/2026-10-15-smoke/`). The change is in `src/extract.py`, and the spec §5.1 is amended. Red: `test_mean_norm_excludes_each_sentence_first_token` failed (`1 failed, 5 passed`). Green: `115 passed`.
+
+## Both prompt placements and a fingerprint in the key (founder decision, 15 Oct 2026)
+
+Red: `tests/test_run_sweep.py` failed at collection with `ImportError: cannot import name 'fingerprint' from 'src.run_sweep'`. The new tests cover:
+- the four `prompt_<tone>_<placement>` types;
+- the instruction landing in the user turn for `user` and in the system prompt for `system`;
+- one 12-hex fingerprint and a `git_sha` on every row;
+- the fingerprint ignoring grid growth but changing with sampling settings and data;
+- a rerun with changed settings producing new rows rather than reusing old ones.
+
+The schema contract tests in `tests/test_config.py` were updated to the new key in the same change. Green: `120 passed`.
