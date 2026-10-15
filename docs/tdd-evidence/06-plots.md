@@ -40,3 +40,26 @@ Fix: numeric x positions with layer tick labels. Green: `110 passed in 2.24s`, a
 ## Scorer B in figures 1 and 5 (founder decision, 15 Oct 2026)
 
 Red: `test_dose_response_has_a_row_per_scorer` and `test_figure_five_reports_both_scorers` failed (`2 failed, 7 passed`). Figure 1 now has one row of panels per scorer, and figure 5 draws grouped bars for scorers A and B, each with its own noise floor. The noise-floor band test now expects 4 bands. Green: `112 passed`.
+
+## Fingerprint and both prompt placements (founder decision, 15 Oct 2026)
+
+The CSV key gained `fingerprint`, rows gained `git_sha`, and prompting rows became `prompt_pos_system`, `prompt_neg_system`, `prompt_pos_user` and `prompt_neg_user`. `src/schema.py` is copied byte for byte from the sweep branch, and `tests/test_config.py` takes the sweep branch's schema edits.
+
+Red (synthetic CSV now carries `fingerprint`, `git_sha` and all four prompting types; five new or changed tests fail):
+
+```
+FAILED tests/test_plots.py::test_figure_five_uses_layer_of_random_control
+FAILED tests/test_plots.py::test_figure_five_reports_all_four_prompting_types_per_scorer
+FAILED tests/test_plots.py::test_read_results_reads_a_numeric_looking_fingerprint_as_text
+FAILED tests/test_plots.py::test_read_results_with_several_fingerprints_raises_naming_them
+FAILED tests/test_plots.py::test_fingerprint_argument_and_cli_option_choose_one
+5 failed, 112 passed in 9.43s
+```
+
+Why they fail: `read_results()` has no `fingerprint` argument (`TypeError: read_results() got an unexpected keyword argument 'fingerprint'`), it does not raise on several fingerprints, and `baseline_table` still looks for `prompt_pos` and `prompt_neg` (`KeyError`).
+
+Green: `read_results(csv, model=None, fingerprint=None)` keeps one fingerprint, reads the column as str, `main` takes `--fingerprint`, and figure 5 reports all four prompting types per scorer.
+
+```
+117 passed in 10.56s   (python -m pytest -q)
+```

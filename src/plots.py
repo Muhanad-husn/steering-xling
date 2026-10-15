@@ -28,7 +28,8 @@ SCORERS = {"A": SENTIMENT, "B": "sentiment_b_mean"}
 REQUIRED_COLUMNS = (*KEY_COLUMNS, *SCORERS.values(), "perplexity", *STABILITY_COLUMNS)
 NOISE_FLOOR_LABEL = "noise floor (std at strength 0)"
 LANGS = ("en", "ar")
-BASELINE_METHODS = ("steering", "random", "prompt_pos", "prompt_neg")
+PROMPT_METHODS = ("prompt_pos_system", "prompt_neg_system", "prompt_pos_user", "prompt_neg_user")
+BASELINE_METHODS = ("steering", "random", *PROMPT_METHODS)
 
 
 def _config() -> dict[str, Any]:
@@ -39,9 +40,9 @@ def load_figure_files() -> dict[str, str]:
     return dict(_config()["plots"]["figure_files"])
 
 
-def read_results(csv: Path | str, model: str | None = None) -> pd.DataFrame:
-    """Read the CSV, check the columns the figures need, and keep a single model."""
-    df = pd.read_csv(csv)
+def read_results(csv: Path | str, model: str | None = None, fingerprint: str | None = None) -> pd.DataFrame:
+    """Read the CSV, check the columns the figures need, and keep a single model and fingerprint."""
+    df = pd.read_csv(csv, dtype={"fingerprint": str})
     for column in REQUIRED_COLUMNS:
         if column not in df.columns:
             raise ValueError(f"results CSV is missing required column '{column}'")
@@ -50,7 +51,13 @@ def read_results(csv: Path | str, model: str | None = None) -> pd.DataFrame:
         if len(models) != 1:
             raise ValueError(f"CSV holds models {models}; pass --model to choose one")
         model = models[0]
-    return df[df["model"] == model].copy()
+    df = df[df["model"] == model]
+    fingerprints = sorted(df["fingerprint"].dropna().unique())
+    if fingerprint is None:
+        if len(fingerprints) != 1:
+            raise ValueError(f"CSV holds fingerprints {fingerprints}; pass --fingerprint to choose one")
+        fingerprint = fingerprints[0]
+    return df[df["fingerprint"] == fingerprint].copy()
 
 
 def _sentiment(df: pd.DataFrame) -> pd.DataFrame:
@@ -183,7 +190,7 @@ def baseline_table(df: pd.DataFrame, layer: int | None) -> pd.DataFrame:
                 "steering": float(sent[sent["strength"] == top][column].mean()),
                 "random": float(rand[rand["strength"] == top][column].mean()),
             }
-            for method in ("prompt_pos", "prompt_neg"):
+            for method in PROMPT_METHODS:
                 values[method] = float(df[(df["vector_type"] == method) & (df["lang"] == lang)][column].mean())
             for method in BASELINE_METHODS:
                 rows.append({"lang": lang, "scorer": scorer, "method": method, "shift": values[method] - base,
@@ -228,9 +235,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--csv", type=Path, default=Path(cfg["paths"]["results_csv"]))
     parser.add_argument("--out", type=Path, default=Path(cfg["paths"]["figures"]))
     parser.add_argument("--model", default=None, help="model id, needed if the CSV holds several")
+    parser.add_argument("--fingerprint", default=None, help="settings fingerprint, needed if the CSV holds several")
     parser.add_argument("--layer", type=int, default=None, help="layer for figure 5 (default: the random control's)")
     args = parser.parse_args(argv)
-    df = read_results(args.csv, args.model)
+    df = read_results(args.csv, args.model, args.fingerprint)
     figures = make_figures(df, args.layer)
     files = cfg["plots"]["figure_files"]
     args.out.mkdir(parents=True, exist_ok=True)
