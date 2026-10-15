@@ -77,6 +77,12 @@ class SmokeConfig:
 
 
 @dataclass(frozen=True)
+class PlotsConfig:
+    dpi: int
+    figure_files: dict[str, str]
+
+
+@dataclass(frozen=True)
 class Config:
     model: ModelConfig
     layers: tuple[int, ...]
@@ -91,6 +97,7 @@ class Config:
     scorers: ScorersConfig
     paths: PathsConfig
     smoke: SmokeConfig
+    plots: PlotsConfig
 
 
 def _coerce(tp: Any, value: Any, where: str) -> Any:
