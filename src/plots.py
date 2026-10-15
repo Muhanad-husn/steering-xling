@@ -23,7 +23,9 @@ from src.schema import KEY_COLUMNS, STABILITY_COLUMNS  # noqa: E402
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.yaml"
 SENTIMENT = "sentiment_a_mean"
-REQUIRED_COLUMNS = (*KEY_COLUMNS, SENTIMENT, "perplexity", *STABILITY_COLUMNS)
+# Figures 1 and 5 show both scorers; the others use scorer A.
+SCORERS = {"A": SENTIMENT, "B": "sentiment_b_mean"}
+REQUIRED_COLUMNS = (*KEY_COLUMNS, *SCORERS.values(), "perplexity", *STABILITY_COLUMNS)
 NOISE_FLOOR_LABEL = "noise floor (std at strength 0)"
 LANGS = ("en", "ar")
 BASELINE_METHODS = ("steering", "random", "prompt_pos", "prompt_neg")
@@ -55,11 +57,11 @@ def _sentiment(df: pd.DataFrame) -> pd.DataFrame:
     return df[df["vector_type"] == "sentiment"]
 
 
-def noise_floor(df: pd.DataFrame, lang: str) -> float:
+def noise_floor(df: pd.DataFrame, lang: str, column: str = SENTIMENT) -> float:
     """Std of the sentiment score at strength 0 over seeds, averaged over layers."""
     base = _sentiment(df)
     base = base[(base["lang"] == lang) & (base["strength"] == 0.0)]
-    per_layer = base.groupby("layer")[SENTIMENT].std(ddof=1)
+    per_layer = base.groupby("layer")[column].std(ddof=1)
     return float(per_layer.mean())
 
 
@@ -69,20 +71,22 @@ def _mean_by(df: pd.DataFrame, by: list[str], column: str = SENTIMENT) -> pd.Ser
 
 def dose_response(df: pd.DataFrame) -> Figure:
     sent = _sentiment(df)
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
-    for ax, lang in zip(axes, LANGS, strict=True):
-        sub = sent[sent["lang"] == lang]
-        zero = float(sub[sub["strength"] == 0.0][SENTIMENT].mean())
-        floor = noise_floor(df, lang)
-        xs = sorted(sub["strength"].unique())
-        ax.fill_between(xs, zero - floor, zero + floor, alpha=0.3, color="grey", label=NOISE_FLOOR_LABEL)
-        for layer, g in sub.groupby("layer"):
-            line = g.groupby("strength")[SENTIMENT].mean()
-            ax.plot(line.index, line.values, marker="o", label=f"layer {int(layer)}")
-        ax.set_title(lang)
+    fig, axes = plt.subplots(len(SCORERS), 2, figsize=(10, 7), sharey=True, sharex=True, squeeze=False)
+    for row, (scorer, column) in zip(axes, SCORERS.items(), strict=True):
+        for ax, lang in zip(row, LANGS, strict=True):
+            sub = sent[sent["lang"] == lang]
+            zero = float(sub[sub["strength"] == 0.0][column].mean())
+            floor = noise_floor(df, lang, column)
+            xs = sorted(sub["strength"].unique())
+            ax.fill_between(xs, zero - floor, zero + floor, alpha=0.3, color="grey", label=NOISE_FLOOR_LABEL)
+            for layer, g in sub.groupby("layer"):
+                line = g.groupby("strength")[column].mean()
+                ax.plot(line.index, line.values, marker="o", label=f"layer {int(layer)}")
+            ax.set_title(f"{lang}, scorer {scorer}")
+        row[0].set_ylabel(f"sentiment (scorer {scorer})")
+    for ax in axes[-1]:
         ax.set_xlabel("strength (x mean residual norm)")
-    axes[0].set_ylabel("sentiment (scorer A)")
-    axes[1].legend(fontsize=7)
+    axes[0][1].legend(fontsize=7)
     fig.tight_layout()
     return fig
 
@@ -156,7 +160,7 @@ def split_half(df: pd.DataFrame) -> Figure:
 
 
 def baseline_table(df: pd.DataFrame, layer: int | None) -> pd.DataFrame:
-    """Sentiment shift over the strength-0 mean, per language and method.
+    """Sentiment shift over the strength-0 mean, per language, scorer and method.
 
     Steering and random use the largest strength. The layer is the one the random control
     was run at unless given. Prompting rows have no layer or strength.
@@ -171,18 +175,19 @@ def baseline_table(df: pd.DataFrame, layer: int | None) -> pd.DataFrame:
     for lang in LANGS:
         sent = _sentiment(df)
         sent = sent[(sent["layer"] == layer) & (sent["lang"] == lang)]
-        base = float(sent[sent["strength"] == 0.0][SENTIMENT].mean())
-        floor = noise_floor(df, lang)
         rand = df[(df["vector_type"] == "random") & (df["layer"] == layer) & (df["lang"] == lang)]
-        values = {
-            "steering": float(sent[sent["strength"] == top][SENTIMENT].mean()),
-            "random": float(rand[rand["strength"] == top][SENTIMENT].mean()),
-        }
-        for method in ("prompt_pos", "prompt_neg"):
-            values[method] = float(df[(df["vector_type"] == method) & (df["lang"] == lang)][SENTIMENT].mean())
-        for method in BASELINE_METHODS:
-            rows.append({"lang": lang, "method": method, "shift": values[method] - base,
-                         "noise": floor, "layer": layer})  # fmt: skip
+        for scorer, column in SCORERS.items():
+            base = float(sent[sent["strength"] == 0.0][column].mean())
+            floor = noise_floor(df, lang, column)
+            values = {
+                "steering": float(sent[sent["strength"] == top][column].mean()),
+                "random": float(rand[rand["strength"] == top][column].mean()),
+            }
+            for method in ("prompt_pos", "prompt_neg"):
+                values[method] = float(df[(df["vector_type"] == method) & (df["lang"] == lang)][column].mean())
+            for method in BASELINE_METHODS:
+                rows.append({"lang": lang, "scorer": scorer, "method": method, "shift": values[method] - base,
+                             "noise": floor, "layer": layer})  # fmt: skip
     return pd.DataFrame(rows)
 
 
@@ -191,11 +196,18 @@ def steering_vs_baselines(df: pd.DataFrame, layer: int | None = None) -> Figure:
     fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
     for ax, lang in zip(axes, LANGS, strict=True):
         sub = table[table["lang"] == lang]
-        ax.bar(sub["method"], sub["shift"], yerr=sub["noise"], capsize=3, color="tab:blue")
+        x = list(range(len(BASELINE_METHODS)))
+        width = 0.8 / len(SCORERS)
+        for i, scorer in enumerate(SCORERS):
+            s = sub[sub["scorer"] == scorer].set_index("method").loc[list(BASELINE_METHODS)]
+            ax.bar([v + (i - (len(SCORERS) - 1) / 2) * width for v in x], s["shift"], width, yerr=s["noise"],
+                   capsize=3, label=f"scorer {scorer}")  # fmt: skip
+        ax.set_xticks(x, list(BASELINE_METHODS))
         ax.axhline(0.0, color="black", linewidth=0.8)
         ax.set_title(f"{lang}, layer {int(sub['layer'].iloc[0])}")
         ax.tick_params(axis="x", labelrotation=30)
     axes[0].set_ylabel("sentiment shift over strength 0 (bars: noise floor)")
+    axes[1].legend(fontsize=7)
     fig.tight_layout()
     return fig
 

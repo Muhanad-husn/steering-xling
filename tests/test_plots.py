@@ -94,7 +94,7 @@ def test_dose_response_draws_noise_floor_band(tmp_path: Path, monkeypatch: pytes
     df = plots.read_results(write_csv(tmp_path))
     fig = plots.dose_response(df)
     labels = [c.get_label() for ax in fig.axes for c in ax.collections]
-    assert labels.count(plots.NOISE_FLOOR_LABEL) == 2  # one band per language panel
+    assert labels.count(plots.NOISE_FLOOR_LABEL) == 4  # one band per language and scorer panel
 
 
 def test_noise_floor_is_std_at_strength_zero_over_seeds(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -125,7 +125,7 @@ def test_figure_five_uses_layer_of_random_control(tmp_path: Path, monkeypatch: p
     df = plots.read_results(write_csv(tmp_path))
     table = plots.baseline_table(df, layer=None)
     assert set(table["lang"]) == {"en", "ar"}
-    en = table[table["lang"] == "en"].set_index("method")["shift"]
+    en = table[(table["lang"] == "en") & (table["scorer"] == "A")].set_index("method")["shift"]
     assert en["steering"] == pytest.approx(0.4)
     assert en["random"] == pytest.approx(0.02)
     assert en["prompt_pos"] == pytest.approx(0.3)

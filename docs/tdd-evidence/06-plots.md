@@ -36,3 +36,7 @@ FAILED tests/test_plots.py::test_transfer_ratio_figure_when_every_layer_is_undef
 ```
 
 Fix: numeric x positions with layer tick labels. Green: `110 passed in 2.24s`, and the sweep-written CSV now yields all five PNGs.
+
+## Scorer B in figures 1 and 5 (founder decision, 15 Oct 2026)
+
+Red: `test_dose_response_has_a_row_per_scorer` and `test_figure_five_reports_both_scorers` failed (`2 failed, 7 passed`). Figure 1 now has one row of panels per scorer, and figure 5 draws grouped bars for scorers A and B, each with its own noise floor. The noise-floor band test now expects 4 bands. Green: `112 passed`.
