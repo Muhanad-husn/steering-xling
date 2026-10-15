@@ -11,7 +11,7 @@ from transformers import PreTrainedTokenizerFast, Qwen2ForCausalLM
 
 import src.run_sweep as run_sweep_mod
 from src.config import Config, SamplingConfig, load_config
-from src.run_sweep import Grid, SweepData, grid_for, run_sweep
+from src.run_sweep import Grid, SweepData, fingerprint, grid_for, prompting_types, run_sweep
 from src.schema import KEY_COLUMNS, MEASURE_COLUMNS, STABILITY_COLUMNS, condition_key
 
 MODEL_NAME = "tiny"
@@ -49,7 +49,8 @@ INSTRUCTIONS = [
 N_SENTIMENT = len(LAYERS) * len(STRENGTHS) * len(SEEDS) * len(LANGS)
 # Random at strength 0 is the unsteered model, already in the sentiment rows: not rerun.
 N_RANDOM = len([s for s in STRENGTHS if s != 0.0]) * len(SEEDS) * len(LANGS)
-N_PROMPTING = 2 * len(SEEDS) * len(LANGS)
+PLACEMENTS = ("system", "user")
+N_PROMPTING = 2 * len(PLACEMENTS) * len(SEEDS) * len(LANGS)
 N_GENERATED = N_SENTIMENT + N_RANDOM + N_PROMPTING
 
 
@@ -165,8 +166,9 @@ def test_controls_present(tmp_path, resumed) -> None:
     df = pd.read_csv(tmp_path / "results.csv")
     counts = df["vector_type"].value_counts()
     assert counts["random"] == N_RANDOM
-    assert counts["prompt_pos"] == N_PROMPTING // 2
-    assert counts["prompt_neg"] == N_PROMPTING // 2
+    per_type = N_PROMPTING // (2 * len(PLACEMENTS))
+    for vt in ("prompt_pos_system", "prompt_neg_system", "prompt_pos_user", "prompt_neg_user"):
+        assert counts[vt] == per_type, vt
     assert set(df[df["vector_type"] == "random"]["layer"]) == {RANDOM_LAYER}
 
 
@@ -225,3 +227,52 @@ def test_grid_for_reads_smoke_and_full_from_config(cfg) -> None:
 def test_random_has_no_strength_zero_rows(tmp_path, resumed) -> None:
     df = pd.read_csv(tmp_path / "results.csv")
     assert (df[df["vector_type"] == "random"]["strength"] != 0.0).all()
+
+
+def test_prompting_types_follow_config(cfg) -> None:
+    assert prompting_types(cfg) == {
+        "prompt_pos_system": ("pos", "system"),
+        "prompt_neg_system": ("neg", "system"),
+        "prompt_pos_user": ("pos", "user"),
+        "prompt_neg_user": ("neg", "user"),
+    }
+
+
+def test_user_placement_puts_instruction_in_user_turn(tmp_path, resumed) -> None:
+    samples = _samples(tmp_path)
+    user = [s for s in samples if s["vector_type"] == "prompt_neg_user" and s["lang"] == "en"]
+    system = [s for s in samples if s["vector_type"] == "prompt_neg_system" and s["lang"] == "en"]
+    neg_en = "respond in a very negative tone ."
+    assert user and all(s["system"] is None and neg_en in s["user_message"] for s in user)
+    assert system and all(s["system"] == neg_en and neg_en not in s["user_message"] for s in system)
+
+
+def test_every_row_carries_one_fingerprint_and_git_sha(tmp_path, resumed) -> None:
+    df = pd.read_csv(tmp_path / "results.csv", dtype={"fingerprint": str})
+    assert df["fingerprint"].nunique() == 1
+    assert df["fingerprint"].str.fullmatch(r"[0-9a-f]{12}").all()
+    assert df["git_sha"].notna().all()
+
+
+def test_fingerprint_tracks_method_settings_not_grid(cfg, data) -> None:
+    base = fingerprint(cfg, data)
+    assert fingerprint(cfg, data) == base
+    # Grid and the hand-set random layer may grow between passes without invalidating rows.
+    grown = dataclasses.replace(cfg, layers=cfg.layers + (99,), strengths=cfg.strengths + (3.0,),
+                                random_direction=dataclasses.replace(cfg.random_direction, layer=7))  # fmt: skip
+    assert fingerprint(grown, data) == base
+    hotter = dataclasses.replace(cfg, sampling=dataclasses.replace(cfg.sampling, temperature=1.3))
+    assert fingerprint(hotter, data) != base
+    other_data = dataclasses.replace(data, pairs=data.pairs[:-1])
+    assert fingerprint(cfg, other_data) != base
+
+
+def test_changed_method_settings_do_not_reuse_old_rows(
+    tmp_path, tiny_model, tiny_tokenizer, cfg, grid, data, no_network
+) -> None:
+    _run(tmp_path, tiny_model, tiny_tokenizer, cfg, grid, data)
+    hotter = dataclasses.replace(cfg, sampling=dataclasses.replace(cfg.sampling, temperature=1.3))
+    _run(tmp_path, tiny_model, tiny_tokenizer, hotter, grid, data)
+    df = pd.read_csv(tmp_path / "results.csv", dtype={"fingerprint": str})
+    assert df["fingerprint"].nunique() == 2
+    assert len(_generated(df)) == 2 * N_GENERATED
