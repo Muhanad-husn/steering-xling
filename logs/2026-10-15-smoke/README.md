@@ -51,3 +51,22 @@ The files above are now in `run1-full-mean-norm/`.
 - "Strength +0 is better than strength +1 on both layers." The unsteered Arabic output reads better than the +1 output at layers 6 and 12.
 - "As for the prompting, both are very bad." Both the positive-tone and the negative-tone baselines produce poor Arabic.
 - So the scorers' Arabic shift at layer 12, +1 (0.52 to 0.67 on scorer A) comes with a quality loss a reader sees. It is not usable steering at that strength on the dev model.
+
+## Run 3: both prompt placements and the fingerprint (founder decision, 15 Oct 2026)
+
+- **Code and settings:** commit `8b65049`, fingerprint `98c7ae998ea0` on every row. Same grid and machine. Took 862 s for 20 conditions.
+- **Reproducibility:** the steering and system-placement rows match run 2 exactly (same seed, code path unchanged for them).
+
+| baseline | lang | sent A | sent B |
+|---|---|---|---|
+| pos, system | en | 0.68 | 0.50 |
+| neg, system | en | 0.67 | 0.85 |
+| pos, user | en | 0.54 | 0.76 |
+| neg, user | en | 0.14 | -0.37 |
+| pos, system | ar | 0.76 | 0.65 |
+| neg, system | ar | 0.62 | 0.50 |
+| pos, user | ar | 0.81 | 0.81 |
+| neg, user | ar | 0.80 | 0.64 |
+
+- **English:** the user placement makes the negative instruction partly work. In 2 of 4 samples the text turns negative.
+- **Arabic:** neither placement moves sentiment by the scorers. The founder's reading of the run 3 Arabic is pending.
