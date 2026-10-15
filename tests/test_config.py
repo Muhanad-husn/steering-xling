@@ -84,24 +84,26 @@ def test_seed_everything_makes_all_three_generators_repeat() -> None:
 
 
 def test_schema_key_and_columns() -> None:
-    assert KEY_COLUMNS == ("model", "layer", "strength", "seed", "lang", "vector_type")
+    assert KEY_COLUMNS == ("model", "fingerprint", "layer", "strength", "seed", "lang", "vector_type")
     assert RESULT_COLUMNS[: len(KEY_COLUMNS)] == KEY_COLUMNS
     assert len(set(RESULT_COLUMNS)) == len(RESULT_COLUMNS)
-    assert set(VECTOR_TYPES) == {"sentiment", "random", "prompt_pos", "prompt_neg", "split_half"}
+    assert set(VECTOR_TYPES) == {"sentiment", "random", "prompt_pos_system", "prompt_neg_system",
+                                 "prompt_pos_user", "prompt_neg_user", "split_half"}  # fmt: skip
+    assert "git_sha" in RESULT_COLUMNS and "git_sha" not in KEY_COLUMNS
     for col in ("sentiment_a_mean", "sentiment_b_mean", "perplexity", "arabic_share",
                 "distinct_bigram_share", "length_mean", "split_half_cos_mean"):
         assert col in RESULT_COLUMNS
 
 
 def test_condition_key_treats_csv_and_python_values_alike() -> None:
-    from_python = condition_key({"model": "m", "layer": 4, "strength": 0.5, "seed": 1,
+    from_python = condition_key({"model": "m", "fingerprint": "0a1b2c3d4e5f", "layer": 4, "strength": 0.5, "seed": 1,
                                  "lang": "en", "vector_type": "sentiment"})
-    from_csv = condition_key({"model": "m", "layer": "4", "strength": "0.5", "seed": "1",
+    from_csv = condition_key({"model": "m", "fingerprint": "0a1b2c3d4e5f", "layer": "4", "strength": "0.5", "seed": "1",
                               "lang": "en", "vector_type": "sentiment"})
     assert from_python == from_csv
-    split = condition_key({"model": "m", "layer": 4, "strength": float("nan"), "seed": None,
+    split = condition_key({"model": "m", "fingerprint": "f", "layer": 4, "strength": float("nan"), "seed": None,
                            "lang": "", "vector_type": "split_half"})
-    assert split == ("m", 4, None, None, None, "split_half")
+    assert split == ("m", "f", 4, None, None, None, "split_half")
 
 
 def test_tiny_model_builds_offline_on_cpu(no_network: None) -> None:

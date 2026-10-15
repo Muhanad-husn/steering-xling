@@ -15,6 +15,16 @@ matplotlib.use("Agg")
 from src.schema import MEASURE_COLUMNS, RESULT_COLUMNS, STABILITY_COLUMNS  # noqa: E402
 
 MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+FINGERPRINT = "abc123def456"
+OTHER_FINGERPRINT = "999888777666"
+GIT_SHA = "0123abc"
+# Shift over the strength-0 mean, by prompt placement: system and user differ on purpose.
+PROMPT_SHIFTS = {
+    "prompt_pos_system": 0.3,
+    "prompt_neg_system": -0.3,
+    "prompt_pos_user": 0.5,
+    "prompt_neg_user": -0.5,
+}
 LAYERS = (4, 8)
 STRENGTHS = (-1.0, 0.0, 1.0)
 SEEDS = (0, 1, 2)
@@ -23,7 +33,7 @@ FIGURE_KEYS = ("dose_response", "transfer_ratio", "trade_off", "split_half", "st
 
 def _row(**kw: Any) -> dict[str, Any]:
     row: dict[str, Any] = {c: None for c in RESULT_COLUMNS}
-    row.update(model=MODEL, **kw)
+    row.update(model=MODEL, fingerprint=FINGERPRINT, git_sha=GIT_SHA, **kw)
     for m in MEASURE_COLUMNS:
         row.setdefault(m, None)
     return row
@@ -54,7 +64,7 @@ def synthetic_rows() -> list[dict[str, Any]]:
             for seed in SEEDS:
                 rows.append(_row(layer=4, strength=s, seed=seed, lang=lang,
                                  vector_type="random", **_measures(0.1 + 0.02 * s, 11)))  # fmt: skip
-        for vt, shift in (("prompt_pos", 0.3), ("prompt_neg", -0.3)):
+        for vt, shift in PROMPT_SHIFTS.items():
             for seed in SEEDS:
                 rows.append(_row(seed=seed, lang=lang, vector_type=vt, **_measures(0.1 + shift, 12)))
     for layer in LAYERS:
@@ -63,8 +73,11 @@ def synthetic_rows() -> list[dict[str, Any]]:
     return rows
 
 
-def write_csv(tmp_path: Path, drop: str | None = None) -> Path:
-    df = pd.DataFrame(synthetic_rows(), columns=list(RESULT_COLUMNS))
+def write_csv(tmp_path: Path, drop: str | None = None, extra_fingerprints: tuple[str, ...] = ()) -> Path:
+    rows = synthetic_rows()
+    for fp in extra_fingerprints:
+        rows += [{**r, "fingerprint": fp} for r in synthetic_rows()]
+    df = pd.DataFrame(rows, columns=list(RESULT_COLUMNS))
     if drop:
         df = df.drop(columns=[drop])
     path = tmp_path / "results.csv"
@@ -128,7 +141,7 @@ def test_figure_five_uses_layer_of_random_control(tmp_path: Path, monkeypatch: p
     en = table[(table["lang"] == "en") & (table["scorer"] == "A")].set_index("method")["shift"]
     assert en["steering"] == pytest.approx(0.4)
     assert en["random"] == pytest.approx(0.02)
-    assert en["prompt_pos"] == pytest.approx(0.3)
+    assert en["prompt_pos_system"] == pytest.approx(0.3)
 
 
 def test_transfer_ratio_figure_when_every_layer_is_undefined(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -155,3 +168,53 @@ def test_figure_five_reports_both_scorers(tmp_path: Path, monkeypatch: pytest.Mo
     en = table[(table["lang"] == "en") & (table["method"] == "steering")].set_index("scorer")["shift"]
     assert en["A"] == pytest.approx(0.4)
     assert en["B"] == pytest.approx(0.8)
+
+
+def test_figure_five_reports_all_four_prompting_types_per_scorer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    df = plots.read_results(write_csv(tmp_path))
+    table = plots.baseline_table(df, layer=None)
+    for scorer in ("A", "B"):
+        en = table[(table["lang"] == "en") & (table["scorer"] == scorer)].set_index("method")["shift"]
+        for method, shift in PROMPT_SHIFTS.items():
+            assert method in plots.BASELINE_METHODS
+            assert en[method] == pytest.approx(shift)
+    assert set(PROMPT_SHIFTS) <= set(table["method"])
+
+
+def test_read_results_keeps_a_single_fingerprint(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    df = plots.read_results(write_csv(tmp_path))
+    assert set(df["fingerprint"]) == {FINGERPRINT}
+    assert df["fingerprint"].map(type).eq(str).all()
+
+
+def test_read_results_reads_a_numeric_looking_fingerprint_as_text(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    path = write_csv(tmp_path, extra_fingerprints=("000123456789",))
+    df = plots.read_results(path, fingerprint="000123456789")
+    assert set(df["fingerprint"]) == {"000123456789"}
+
+
+def test_read_results_with_several_fingerprints_raises_naming_them(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    path = write_csv(tmp_path, extra_fingerprints=(OTHER_FINGERPRINT,))
+    with pytest.raises(ValueError, match="fingerprint") as err:
+        plots.read_results(path)
+    assert FINGERPRINT in str(err.value) and OTHER_FINGERPRINT in str(err.value)
+
+
+def test_fingerprint_argument_and_cli_option_choose_one(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    path = write_csv(tmp_path, extra_fingerprints=(OTHER_FINGERPRINT,))
+    df = plots.read_results(path, fingerprint=OTHER_FINGERPRINT)
+    assert set(df["fingerprint"]) == {OTHER_FINGERPRINT}
+    out = tmp_path / "figs"
+    assert plots.main(["--csv", str(path), "--out", str(out), "--fingerprint", FINGERPRINT]) == 0
+    assert len(list(out.glob("*.png"))) == 5
