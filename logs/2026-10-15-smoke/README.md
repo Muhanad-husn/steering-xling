@@ -70,3 +70,16 @@ The files above are now in `run1-full-mean-norm/`.
 
 - **English:** the user placement makes the negative instruction partly work. In 2 of 4 samples the text turns negative.
 - **Arabic:** neither placement moves sentiment by the scorers. The founder's reading of the run 3 Arabic is pending.
+
+## Founder's reading of the Arabic prompting outputs, run 3 (15 Oct 2026)
+
+| baseline | founder's reading |
+|---|---|
+| pos, system | "really bad" |
+| neg, system | "bad" |
+| pos, user | "for such small model, it's good" |
+| neg, user | "bad" |
+
+- The user placement is the better one for Arabic on the dev model, but only the positive tone reads well. The negative tone fails in both placements.
+- The scorers put every Arabic prompting row between 0.50 and 0.81. The reading agrees that the negative instruction did not work in Arabic.
+- This is the dev model with one seed. The T4 smoke run on the 1.5B model decides whether this is a limit of model size.
