@@ -25,3 +25,14 @@ Why it fails: `src/plots.py` doesn't exist yet, so the five figures, the noise f
 ```
 
 The 6 new tests build a synthetic CSV in `tmp_path` from `src/schema.py` and run `plots.main` with `torch` and `transformers` set to `None` in `sys.modules`. `config.yaml` gained a `plots` section (`dpi`, `figure_files`) and `src/config.py` a matching `PlotsConfig`, because the loader refuses unknown keys. `src/plots.py` reads that section as plain YAML so it never imports `src.config`, which needs torch.
+
+## A second red, found by feeding real sweep output (15 Oct 2026)
+
+A CSV written by `src/run_sweep.py` (tiny model, fake scorers) crashed `python -m src.plots`. Every layer's English shift sat inside the noise floor, so the transfer-ratio chart had no bars, and placing the "undefined" label at a string x failed. The regression test `test_transfer_ratio_figure_when_every_layer_is_undefined` failed:
+
+```
+FAILED tests/test_plots.py::test_transfer_ratio_figure_when_every_layer_is_undefined
+1 failed, 6 passed in 2.10s
+```
+
+Fix: numeric x positions with layer tick labels. Green: `110 passed in 2.24s`, and the sweep-written CSV now yields all five PNGs.

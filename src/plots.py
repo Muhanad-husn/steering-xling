@@ -111,11 +111,13 @@ def transfer_table(df: pd.DataFrame) -> pd.DataFrame:
 def transfer_ratio(df: pd.DataFrame) -> Figure:
     table = transfer_table(df)
     fig, ax = plt.subplots(figsize=(6, 4))
-    defined = table.dropna(subset=["ratio"])
-    ax.bar(defined["layer"].astype(str), defined["ratio"], color="tab:blue")
-    for i, layer in enumerate(table["layer"].astype(str)):
-        if pd.isna(table["ratio"].iloc[i]):
-            ax.text(layer, 0, "undefined\n(English shift\nwithin noise)", ha="center", va="bottom", fontsize=7)
+    # Numeric x positions, so the axis works even when no layer has a defined ratio.
+    x = list(range(len(table)))
+    ax.bar(x, table["ratio"].fillna(0.0), color="tab:blue")
+    for i, ratio in enumerate(table["ratio"]):
+        if pd.isna(ratio):
+            ax.text(i, 0, "undefined\n(English shift\nwithin noise)", ha="center", va="bottom", fontsize=7)
+    ax.set_xticks(x, table["layer"].astype(str))
     ax.axhline(1.0, color="grey", linestyle="--", linewidth=1)
     ax.set_xlabel("layer")
     ax.set_ylabel(f"Arabic shift / English shift (strength {table['strength'].iloc[0]:g})")
