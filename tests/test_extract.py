@@ -66,3 +66,20 @@ def test_split_half_same_seed_identical(
     c = split_half_stability(tiny_model, tiny_tokenizer, PAIRS, n_splits=N_SPLITS, seed=SEED + 1)
     assert torch.equal(a, b)
     assert not torch.equal(a, c)
+
+
+def test_mean_norm_excludes_each_sentence_first_token(
+    tiny_model: Qwen2ForCausalLM, tiny_tokenizer: PreTrainedTokenizerBase
+) -> None:
+    """Spec 5.1, amended 15 Oct 2026: the first token's attention-sink norm would set the scale."""
+    sentences = [p["positive"] for p in PAIRS] + [p["negative"] for p in PAIRS]
+    total = torch.zeros(tiny_model.config.num_hidden_layers)
+    count = 0
+    with torch.no_grad():
+        for s in sentences:  # one at a time: no padding, so position 0 is the first token
+            ids = tiny_tokenizer(s, return_tensors="pt")["input_ids"]
+            hs = torch.stack(tiny_model(input_ids=ids, output_hidden_states=True).hidden_states[1:])
+            total += hs[:, 0, 1:].norm(dim=-1).sum(dim=-1)
+            count += ids.shape[1] - 1
+    out = extract_vectors(tiny_model, tiny_tokenizer, PAIRS, batch_size=3)
+    assert torch.allclose(out.mean_norm, total / count, atol=1e-4)
