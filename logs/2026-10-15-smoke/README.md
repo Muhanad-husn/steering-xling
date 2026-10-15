@@ -18,3 +18,30 @@
 - **Split-half cosine** is 0.997 (layer 6) and 0.994 (layer 12), well above the 0.5 kill threshold.
 - **Prompting baseline:** `prompt_neg` scores as positive as `prompt_pos` with scorer A (en 0.67 vs 0.68). Not yet read by a human.
 - **Scorer B (English)** gives -0.97 to -0.99 on the garbage output, so a broken model can look like a strong negative shift. This is a reason to keep perplexity next to every shift.
+
+The files above are now in `run1-full-mean-norm/`.
+
+## Run 2: mean_norm without the first token (founder chose option 1)
+
+- **Change:** `mean_norm` leaves out each sentence's first token (`src/extract.py`, spec §5.1 amended). Same grid and machine as run 1.
+- **Time:** 736 s. Steered outputs are now full-length text, not early-stopping garbage.
+- **Files:** `run2-first-token-excluded/`.
+
+| layer | strength | lang | sent A | sent B | perplexity | Arabic share |
+|---|---|---|---|---|---|---|
+| 6 | -1 | en | -0.20 | -0.22 | 11.5 | 0.00 |
+| 6 | 0 | en | 0.34 | 0.64 | 8.5 | 0.00 |
+| 6 | +1 | en | 0.00 | 0.02 | 203.4 | 0.00 |
+| 12 | -1 | en | -0.53 | -0.99 | 15.2 | 0.00 |
+| 12 | +1 | en | 0.77 | 1.00 | 15.9 | 0.00 |
+| 6 | -1 | ar | 0.30 | 0.36 | 43.1 | 1.00 |
+| 6 | 0 | ar | 0.52 | 0.44 | 27.1 | 1.00 |
+| 6 | +1 | ar | 0.27 | 0.16 | 230.0 | 0.98 |
+| 12 | -1 | ar | -0.07 | -0.09 | 45.0 | 0.99 |
+| 12 | +1 | ar | 0.67 | 0.53 | 60.1 | 0.77 |
+
+- **Reading, smoke only.** One seed and 4 prompts, so there is no noise floor yet and nothing here is a result.
+  - Layer 12 moves English sentiment in both directions, with perplexity under 2x baseline.
+  - Arabic moves the same way at layer 12, but perplexity is about 2.2x baseline, and at +1 the Arabic share falls to 0.77.
+  - Layer 6 at +1 is too strong (perplexity about 24x).
+- Nobody has read the Arabic outputs yet.

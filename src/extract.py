@@ -3,6 +3,10 @@
 Activations come from `output_hidden_states=True`: `hidden_states[L + 1]` is the residual
 stream after decoder layer L (`hidden_states[0]` is the embedding output). Each sentence is
 averaged over its real tokens, padding masked out. No hooks are needed to read them.
+
+`mean_norm` leaves out each sentence's first token (spec 5.1, amended 15 Oct 2026). In Qwen2.5
+that token is an attention sink whose residual norm is about 100 times the others, and
+including it made strength 1 several times a typical token's norm.
 """
 
 from collections.abc import Mapping, Sequence
@@ -31,7 +35,10 @@ def _sentence_means(
     sentences: Sequence[str],
     batch_size: int | None,
 ) -> tuple[torch.Tensor, torch.Tensor, int]:
-    """Return ([n_sent, n_layers, d] token-averaged residuals, [n_layers] summed token norms, n_tokens)."""
+    """Return ([n_sent, n_layers, d] token-averaged residuals, [n_layers] summed norms, n_tokens).
+
+    The norms and n_tokens skip each sentence's first token; the averaged residuals keep it.
+    """
     device = next(model.parameters()).device
     step = batch_size or len(sentences)
     means: list[torch.Tensor] = []
@@ -46,9 +53,12 @@ def _sentence_means(
         # hidden_states[L + 1] is the residual after layer L.
         layers = torch.stack(out.hidden_states[1:], dim=0).to(torch.float32)  # [L, b, t, d]
         means.append(((layers * mask).sum(dim=2) / counts).permute(1, 0, 2))  # [b, L, d]
-        tok_norms = (layers.norm(dim=-1) * mask.squeeze(-1)).sum(dim=(1, 2))  # [L]
+        real = enc["attention_mask"].to(torch.float32)  # [b, t]
+        first = (real.cumsum(dim=1) == 1).to(torch.float32) * real  # first real token, any padding side
+        norm_mask = real - first
+        tok_norms = (layers.norm(dim=-1) * norm_mask).sum(dim=(1, 2))  # [L]
         norm_sum = tok_norms if norm_sum is None else norm_sum + tok_norms
-        n_tokens += int(mask.sum().item())
+        n_tokens += int(norm_mask.sum().item())
     assert norm_sum is not None, "no sentences given"
     return torch.cat(means, dim=0).cpu(), norm_sum.cpu(), n_tokens
 

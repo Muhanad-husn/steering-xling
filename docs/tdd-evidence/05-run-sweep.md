@@ -34,3 +34,7 @@ The resume test interrupts the first run after 5 conditions, with a callback tha
 ## Random direction skips strength 0 (founder decision, 15 Oct 2026)
 
 At strength 0 the random direction is the unsteered model, which the sentiment rows at strength 0 already cover. Red: `5 failed, 6 passed` (row and call counts, controls, samples, and the new `test_random_has_no_strength_zero_rows`). Green: `114 passed`.
+
+## mean_norm leaves out the first token (founder decision, 15 Oct 2026)
+
+The smoke run showed strength ±1 destroying the dev model, because the first token's attention-sink norm dominated `mean_norm` (see `logs/2026-10-15-smoke/`). The change is in `src/extract.py`, and the spec §5.1 is amended. Red: `test_mean_norm_excludes_each_sentence_first_token` failed (`1 failed, 5 passed`). Green: `115 passed`.

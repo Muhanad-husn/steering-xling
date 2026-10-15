@@ -52,6 +52,8 @@ Check the scorer model names on Hugging Face before coding; replace any that no 
 ### 5.1 Extract the steering vector
 - For each pair, run both sentences through the model and record the residual stream after every decoder layer, averaged over the sentence's tokens.
 - Vector for layer L = mean(positive) minus mean(negative). Store the raw vector, its unit version, and the average residual norm at that layer.
+
+> **Amended 15 Oct 2026.** The average residual norm leaves out each sentence's first token. The phase 3 smoke run on Qwen2.5-0.5B showed that token's norm at about 1600 against about 13 for the rest (an attention sink), so averaging over all tokens made strength 1 roughly 15 times a typical token's norm and every non-zero strength destroyed the output (perplexity in the millions). The founder chose this fix over a median norm or smaller strengths, before any real result was seen. The steering vector itself is unchanged. Run record: `logs/2026-10-15-smoke/`.
 - **Stability check:** split the pairs randomly into two halves 20 times, build a vector from each half, and report the cosine similarity between halves per layer. Low similarity means the direction is noise.
 
 ### 5.2 Apply it
