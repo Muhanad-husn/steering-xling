@@ -45,6 +45,12 @@ class RandomDirectionConfig:
 
 
 @dataclass(frozen=True)
+class PromptingConfig:
+    placements: tuple[str, ...]
+    user_template: str
+
+
+@dataclass(frozen=True)
 class BootstrapConfig:
     n_resamples: int
     ci: float
@@ -87,6 +93,7 @@ class Config:
     extraction: ExtractionConfig
     stability: StabilityConfig
     random_direction: RandomDirectionConfig
+    prompting: PromptingConfig
     bootstrap: BootstrapConfig
     scorers: ScorersConfig
     paths: PathsConfig

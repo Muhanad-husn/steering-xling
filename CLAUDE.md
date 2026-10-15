@@ -70,7 +70,8 @@ The spec states intent. It does not outrank common sense.
   adds `alpha * mean_norm_L * unit_vector_L` at every position, so a strength means the
   same thing at every layer.
 - **The sweep is resumable.** It skips any condition already in `results.csv`, keyed on
-  model, layer, strength, seed, language and vector type.
+  model, fingerprint, layer, strength, seed, language and vector type. The fingerprint
+  hashes the settings, data and code that shape a row (spec §6, amended 15 Oct 2026).
 - **Figures come from `results.csv` alone.** `plots.py` never reruns a model.
 - **Development model:** `Qwen/Qwen2.5-0.5B-Instruct` on CPU. Real numbers come only from
   the 1.5B sweep on a T4.

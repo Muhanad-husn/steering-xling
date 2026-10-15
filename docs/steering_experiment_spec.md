@@ -52,6 +52,8 @@ Check the scorer model names on Hugging Face before coding; replace any that no 
 ### 5.1 Extract the steering vector
 - For each pair, run both sentences through the model and record the residual stream after every decoder layer, averaged over the sentence's tokens.
 - Vector for layer L = mean(positive) minus mean(negative). Store the raw vector, its unit version, and the average residual norm at that layer.
+
+> **Amended 15 Oct 2026.** The average residual norm leaves out each sentence's first token. The phase 3 smoke run on Qwen2.5-0.5B showed that token's norm at about 1600 against about 13 for the rest (an attention sink), so averaging over all tokens made strength 1 roughly 15 times a typical token's norm and every non-zero strength destroyed the output (perplexity in the millions). The founder chose this fix over a median norm or smaller strengths, before any real result was seen. The steering vector itself is unchanged. Run record: `logs/2026-10-15-smoke/`.
 - **Stability check:** split the pairs randomly into two halves 20 times, build a vector from each half, and report the cosine similarity between halves per layer. Low similarity means the direction is noise.
 
 ### 5.2 Apply it
@@ -67,7 +69,9 @@ Check the scorer model names on Hugging Face before coding; replace any that no 
 ### 5.4 Controls
 - **Noise floor:** strength 0 across the 3 seeds. Report the standard deviation; any effect smaller than this is not claimed.
 - **Random direction:** a random unit vector with the same norm, at the best layer and all strengths. If it also shifts sentiment, the result is not specific.
-- **Prompting baseline:** no steering, tone requested in the system prompt.
+- **Prompting baseline:** no steering, tone requested in the system prompt, and separately in the user message.
+
+> **Amended 15 Oct 2026.** In the phase 3 smoke run on Qwen2.5-0.5B, the system-prompt instruction did not work: "respond in a very negative tone" produced cheerful English, and the founder read both Arabic prompting outputs as very bad. The founder chose to keep the system-prompt baseline and add a second baseline that puts the instruction at the start of the user message (`prompting.user_template` in `config.yaml`). Both run in every sweep as `prompt_<tone>_system` and `prompt_<tone>_user`, and the report shows both, so neither is chosen after the results are seen. The stronger of the two is the harder bar for steering. This was decided before any real (1.5B) result.
 - **Optional, phase 2, directional ablation:** project the sentiment direction out of the residual stream, then give explicitly emotional prompts ("Describe the best day of your life"). Does sentiment flatten? This is the "remove part of the model and see what breaks" test.
 
 ### 5.5 Measures per condition
@@ -79,7 +83,9 @@ Check the scorer model names on Hugging Face before coding; replace any that no 
 
 ## 6. Outputs
 
-- `results/results.csv`: one row per model, layer, strength, seed, language, vector type, with all measures.
+- `results/results.csv`: one row per model, fingerprint, layer, strength, seed, language, vector type, with all measures and the git commit.
+
+> **Amended 15 Oct 2026.** `fingerprint` is a 12-character hash of every setting, data file and source file that shapes a row, leaving out the grid (layers, strengths, seeds, languages, the hand-set random layer). The sweep resumes on it, so rows made under old settings or old code are never reused, and figures never mix them. `git_sha` records the commit but is not part of the key.
 - `results/samples.jsonl`: every prompt and generation, for inspection.
 - `results/figures/`:
   1. Dose-response: sentiment against strength, one line per layer, English and Arabic side by side.
