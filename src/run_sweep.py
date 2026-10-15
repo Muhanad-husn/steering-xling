@@ -143,7 +143,8 @@ def _conditions(
         print("random_direction.layer is not set in config.yaml: random-direction rows skipped")
     else:
         unit = random_unit_vector(d_model, rd.seed)
-        for strength in grid.strengths:
+        # Strength 0 is the unsteered model, already run as the sentiment rows at strength 0.
+        for strength in [s for s in grid.strengths if s != 0.0]:
             for seed in grid.seeds:
                 for lang in langs:
                     yield Condition("random", rd.layer, strength, seed, lang, unit, float(mean_norm[rd.layer]))
