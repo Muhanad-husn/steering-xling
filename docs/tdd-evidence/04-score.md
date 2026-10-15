@@ -14,4 +14,10 @@ Why it fails: `src/score.py` does not exist yet, so none of the sentiment mappin
 
 ## Green
 
-(filled in after implementation)
+After `src/score.py` was added, `python -m pytest -q` passed the whole suite:
+
+```
+91 passed in 0.20s
+```
+
+That is the 14 new tests in `tests/test_score.py` plus the 77 existing tests. No network is used: scorers are injected fakes and perplexity runs on the tiny random model.
