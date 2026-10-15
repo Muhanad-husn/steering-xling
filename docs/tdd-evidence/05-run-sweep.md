@@ -49,3 +49,7 @@ Red: `tests/test_run_sweep.py` failed at collection with `ImportError: cannot im
 - a rerun with changed settings producing new rows rather than reusing old ones.
 
 The schema contract tests in `tests/test_config.py` were updated to the new key in the same change. Green: `120 passed`.
+
+## --model chooses the model apart from the grid (15 Oct 2026)
+
+This is for the T4 smoke run, which uses the smoke grid on the main model. Red: `ImportError: cannot import name 'model_id_for'`. Green: `135 passed`. The defaults are unchanged: dev for smoke, main for full.

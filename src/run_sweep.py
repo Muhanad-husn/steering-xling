@@ -133,6 +133,13 @@ def git_sha() -> str:
     return out.stdout.strip()
 
 
+def model_id_for(cfg: Config, smoke: bool, choice: str | None) -> str:
+    """`--model dev|main`, or by default the dev model for the smoke grid and the main one otherwise."""
+    if choice is None:
+        choice = "dev" if smoke else "main"
+    return {"dev": cfg.model.dev_id, "main": cfg.model.id}[choice]
+
+
 def grid_for(cfg: Config, smoke: bool) -> Grid:
     if smoke:
         s = cfg.smoke
@@ -324,11 +331,12 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--grid", choices=["full", "smoke"], default="full")
+    parser.add_argument("--model", choices=["dev", "main"], default=None, help="default: dev for smoke, main for full")
     args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
     smoke = args.grid == "smoke"
-    model_name = cfg.model.dev_id if smoke else cfg.model.id
+    model_name = model_id_for(cfg, smoke, args.model)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     dtype = getattr(torch, cfg.model.dtype) if device == "cuda" else torch.float32
 
