@@ -11,7 +11,7 @@ from transformers import PreTrainedTokenizerFast, Qwen2ForCausalLM
 
 import src.run_sweep as run_sweep_mod
 from src.config import Config, SamplingConfig, load_config
-from src.run_sweep import Grid, SweepData, fingerprint, grid_for, prompting_types, run_sweep
+from src.run_sweep import Grid, SweepData, fingerprint, grid_for, model_id_for, prompting_types, run_sweep
 from src.schema import KEY_COLUMNS, MEASURE_COLUMNS, STABILITY_COLUMNS, condition_key
 
 MODEL_NAME = "tiny"
@@ -276,3 +276,11 @@ def test_changed_method_settings_do_not_reuse_old_rows(
     df = pd.read_csv(tmp_path / "results.csv", dtype={"fingerprint": str})
     assert df["fingerprint"].nunique() == 2
     assert len(_generated(df)) == 2 * N_GENERATED
+
+
+def test_model_id_defaults_to_dev_for_smoke_and_main_for_full(cfg) -> None:
+    assert model_id_for(cfg, smoke=True, choice=None) == cfg.model.dev_id
+    assert model_id_for(cfg, smoke=False, choice=None) == cfg.model.id
+    # The T4 smoke run uses the smoke grid on the main model.
+    assert model_id_for(cfg, smoke=True, choice="main") == cfg.model.id
+    assert model_id_for(cfg, smoke=False, choice="dev") == cfg.model.dev_id
