@@ -45,3 +45,9 @@ The files above are now in `run1-full-mean-norm/`.
   - Arabic moves the same way at layer 12, but perplexity is about 2.2x baseline, and at +1 the Arabic share falls to 0.77.
   - Layer 6 at +1 is too strong (perplexity about 24x).
 - Nobody has read the Arabic outputs yet.
+
+## Founder's reading of the Arabic outputs, run 2 (15 Oct 2026)
+
+- "Strength +0 is better than strength +1 on both layers." The unsteered Arabic output reads better than the +1 output at layers 6 and 12.
+- "As for the prompting, both are very bad." Both the positive-tone and the negative-tone baselines produce poor Arabic.
+- So the scorers' Arabic shift at layer 12, +1 (0.52 to 0.67 on scorer A) comes with a quality loss a reader sees. It is not usable steering at that strength on the dev model.
