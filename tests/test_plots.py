@@ -137,3 +137,21 @@ def test_transfer_ratio_figure_when_every_layer_is_undefined(tmp_path: Path, mon
     df = df[~((df["layer"] == 4) & (df["vector_type"] == "sentiment"))]  # only layer 8 left, English flat
     assert plots.transfer_table(df)["ratio"].isna().all()
     plots.transfer_ratio(df)  # no bars to draw; must still render the "undefined" labels
+
+
+def test_dose_response_has_a_row_per_scorer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    fig = plots.dose_response(plots.read_results(write_csv(tmp_path)))
+    labels = [ax.get_ylabel() for ax in fig.axes]
+    assert len(fig.axes) == 4
+    assert any("scorer A" in s for s in labels) and any("scorer B" in s for s in labels)
+
+
+def test_figure_five_reports_both_scorers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    df = plots.read_results(write_csv(tmp_path))
+    df["sentiment_b_mean"] = df["sentiment_b_mean"] * 2  # scorer B sees twice the shift
+    table = plots.baseline_table(df, layer=None)
+    en = table[(table["lang"] == "en") & (table["method"] == "steering")].set_index("scorer")["shift"]
+    assert en["A"] == pytest.approx(0.4)
+    assert en["B"] == pytest.approx(0.8)
