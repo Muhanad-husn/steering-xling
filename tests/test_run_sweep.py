@@ -47,7 +47,8 @@ INSTRUCTIONS = [
 ]
 
 N_SENTIMENT = len(LAYERS) * len(STRENGTHS) * len(SEEDS) * len(LANGS)
-N_RANDOM = len(STRENGTHS) * len(SEEDS) * len(LANGS)
+# Random at strength 0 is the unsteered model, already in the sentiment rows: not rerun.
+N_RANDOM = len([s for s in STRENGTHS if s != 0.0]) * len(SEEDS) * len(LANGS)
 N_PROMPTING = 2 * len(SEEDS) * len(LANGS)
 N_GENERATED = N_SENTIMENT + N_RANDOM + N_PROMPTING
 
@@ -219,3 +220,8 @@ def test_grid_for_reads_smoke_and_full_from_config(cfg) -> None:
         cfg.smoke.seeds,
         cfg.smoke.n_prompts,
     )
+
+
+def test_random_has_no_strength_zero_rows(tmp_path, resumed) -> None:
+    df = pd.read_csv(tmp_path / "results.csv")
+    assert (df[df["vector_type"] == "random"]["strength"] != 0.0).all()
