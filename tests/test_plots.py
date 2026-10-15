@@ -129,3 +129,11 @@ def test_figure_five_uses_layer_of_random_control(tmp_path: Path, monkeypatch: p
     assert en["steering"] == pytest.approx(0.4)
     assert en["random"] == pytest.approx(0.02)
     assert en["prompt_pos"] == pytest.approx(0.3)
+
+
+def test_transfer_ratio_figure_when_every_layer_is_undefined(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    df = plots.read_results(write_csv(tmp_path))
+    df = df[~((df["layer"] == 4) & (df["vector_type"] == "sentiment"))]  # only layer 8 left, English flat
+    assert plots.transfer_table(df)["ratio"].isna().all()
+    plots.transfer_ratio(df)  # no bars to draw; must still render the "undefined" labels
