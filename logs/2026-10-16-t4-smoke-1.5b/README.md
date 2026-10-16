@@ -61,7 +61,7 @@ Prompting rows carry the strength 0 perplexity (6.0 en, 12.3 ar), because perple
 - **Against dev run 3 (0.5B):** baseline Arabic perplexity is lower (12.3 vs 27.1) and the Arabic baseline reads better (see below). The steering pattern is the same: layer 12 works in English, and Arabic does not hold up at ±1. The English negative prompt failure was a limit of the small model; it is fixed at 1.5B.
 
 ## Figures
-`python -m src.plots --csv logs/2026-10-16-t4-smoke-1.5b/results.csv --out <scratch>` fails, as the issue expected: `ValueError: cannot pick the layer: random control found at []; pass --layer`. Because `main()` builds all five figures before it saves any, **no figure is written at all**, not only figure 5. Figures 1 to 4 render when called one by one. Not committed: real figures come from the full sweep.
+`python -m src.plots --csv logs/2026-10-16-t4-smoke-1.5b/results.csv --out <scratch>` fails, as the issue expected: `ValueError: cannot pick the layer: random control found at []; pass --layer`. Because `main()` built all five figures before it saved any, **no figure was written at all**, not only figure 5. Fixed in this PR: each figure is now saved on its own, and a figure that cannot be drawn is named on stderr with exit code 1. On this CSV it now writes figures 1 to 4. Figures are not committed: real figures come from the full sweep.
 
 ## Founder's reading of the Arabic outputs (16 Oct 2026), word for word
 
@@ -114,7 +114,14 @@ Prompting rows carry the strength 0 perplexity (6.0 en, 12.3 ar), because perple
 - **Steering in Arabic:** -1 is unusable at both layers. +1 at layer 12 is mixed (2 acceptable, 1 bad, 1 very bad); layer 6 +1 is bad throughout.
 - **Prompting in Arabic:** on 1.5B all four baselines mostly read acceptable or good. That is a change from the dev model, where three of four were bad.
 
+## Founder's decisions (16 Oct 2026)
+- **Arabic negative prompting:** "yes, the Arabic negative outputs read negative." So on 1.5B the negative instruction works in Arabic by the founder's reading, in both placements, though the scorers barely move (neg user A -0.06, B -0.06).
+- **Strengths:** "let's measure them." The full grid keeps -2 to 2 with the ±0.25 and ±0.5 steps, unchanged; this run gives no reason to cut them before they are measured.
+- **Random-direction layer:** layer 12, set now in `config.yaml` (spec §5.4 amended 16 Oct 2026). The random layer is outside the fingerprint, so this changes no existing key.
+
+## Fixed in this PR
+- **Colab notebook:** cell 4 now runs `pip uninstall -y torchvision` after the pinned install.
+- **`plots.py`:** a figure that fails no longer stops the others (`docs/tdd-evidence/07-plots-partial-save.md`).
+
 ## Open
-- **Colab notebook:** cell 4 should remove or replace Colab's `torchvision` after installing the pinned torch, or the first sweep fails at import. A notebook change belongs in its own PR.
-- **`plots.py`:** a figure 5 failure stops figures 1 to 4 being saved. Raise this with the founder before the full sweep's first pass, which also has no random rows.
 - **Resume** on the T4 path is not verified.
