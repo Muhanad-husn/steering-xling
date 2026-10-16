@@ -218,3 +218,17 @@ def test_fingerprint_argument_and_cli_option_choose_one(tmp_path: Path, monkeypa
     out = tmp_path / "figs"
     assert plots.main(["--csv", str(path), "--out", str(out), "--fingerprint", FINGERPRINT]) == 0
     assert len(list(out.glob("*.png"))) == 5
+
+
+def test_failing_figure_does_not_stop_the_others(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """No random rows (the first pass): figure 5 fails, figures 1 to 4 are still saved, exit is non-zero."""
+    plots = load_plots(monkeypatch)
+    df = pd.DataFrame(synthetic_rows(), columns=list(RESULT_COLUMNS))
+    path = tmp_path / "results.csv"
+    df[df["vector_type"] != "random"].to_csv(path, index=False)
+    out = tmp_path / "figs"
+    assert plots.main(["--csv", str(path), "--out", str(out)]) == 1
+    assert len(list(out.glob("*.png"))) == 4
+    assert "steering_vs_baselines" in capsys.readouterr().err

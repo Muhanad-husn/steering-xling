@@ -6,7 +6,8 @@ src.config (which needs torch) is not required.
 """
 
 import argparse
-from collections.abc import Sequence
+import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -219,14 +220,17 @@ def steering_vs_baselines(df: pd.DataFrame, layer: int | None = None) -> Figure:
     return fig
 
 
+FIGURE_BUILDERS: dict[str, Callable[[pd.DataFrame, int | None], Figure]] = {
+    "dose_response": lambda df, layer: dose_response(df),
+    "transfer_ratio": lambda df, layer: transfer_ratio(df),
+    "trade_off": lambda df, layer: trade_off(df),
+    "split_half": lambda df, layer: split_half(df),
+    "steering_vs_baselines": steering_vs_baselines,
+}
+
+
 def make_figures(df: pd.DataFrame, layer: int | None = None) -> dict[str, Figure]:
-    return {
-        "dose_response": dose_response(df),
-        "transfer_ratio": transfer_ratio(df),
-        "trade_off": trade_off(df),
-        "split_half": split_half(df),
-        "steering_vs_baselines": steering_vs_baselines(df, layer),
-    }
+    return {key: build(df, layer) for key, build in FIGURE_BUILDERS.items()}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -239,13 +243,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--layer", type=int, default=None, help="layer for figure 5 (default: the random control's)")
     args = parser.parse_args(argv)
     df = read_results(args.csv, args.model, args.fingerprint)
-    figures = make_figures(df, args.layer)
     files = cfg["plots"]["figure_files"]
     args.out.mkdir(parents=True, exist_ok=True)
-    for key, fig in figures.items():
+    failed = []
+    # Each figure is saved on its own, so one that cannot be drawn does not stop the others.
+    for key, build in FIGURE_BUILDERS.items():
+        try:
+            fig = build(df, args.layer)
+        except ValueError as e:
+            print(f"{key}: not drawn: {e}", file=sys.stderr)
+            failed.append(key)
+            continue
         fig.savefig(args.out / files[key], dpi=cfg["plots"]["dpi"])
         plt.close(fig)
-    return 0
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
