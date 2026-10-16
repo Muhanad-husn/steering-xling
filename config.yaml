@@ -27,7 +27,7 @@ stability:
   seed: 0
 
 random_direction:
-  layer: null       # the best layer, set by hand after the first pass; the sweep never picks it
+  layer: 12         # set by the founder from the T4 smoke run, 16 Oct 2026 (spec 5.4); the sweep never picks it
   seed: 1234
 
 # Prompting baseline (spec 5.4, amended 15 Oct 2026): the tone instruction goes in the system
