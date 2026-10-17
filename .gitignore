@@ -13,3 +13,5 @@ venv/
 *.bin
 *.pt
 hf_cache/
+# the sweep writes samples here; run records keep them under logs/
+results/samples.jsonl

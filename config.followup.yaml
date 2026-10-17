@@ -1,0 +1,79 @@
+# Second pass of the full sweep (spec 5.3 and 5.4, amended 17 Oct 2026). A copy of config.yaml that
+# differs only in `layers` and `random_direction.layer`, both left out of the fingerprint, so a resumed
+# run adds rows under the first pass's fingerprint. tests/test_config.py holds it to that.
+
+model:
+  id: Qwen/Qwen2.5-1.5B-Instruct          # main model, run on a T4
+  dev_id: Qwen/Qwen2.5-0.5B-Instruct      # CPU development and smoke test
+  dtype: float16                          # on GPU; CPU runs use float32
+
+# First pass plus finer layers around the best ones (12 and 16): agent's pick, after the founder asked for the
+# finer pass on 17 Oct 2026.
+layers: [4, 8, 10, 12, 14, 16, 18, 20, 24]
+
+# Multipliers of the layer's mean residual norm.
+strengths: [-2.0, -1.0, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0, 2.0]
+
+seeds: [0, 1, 2]
+languages: [en, ar]
+
+sampling:
+  temperature: 0.7
+  top_p: 0.9
+  max_new_tokens: 60
+
+extraction:
+  batch_size: 8
+
+stability:
+  n_splits: 20
+  seed: 0
+
+random_direction:
+  layer: 16        # the strongest English layer; the first pass ran the control at 12 (founder, 17 Oct 2026)
+  seed: 1234
+
+# Prompting baseline (spec 5.4, amended 15 Oct 2026): the tone instruction goes in the system
+# prompt, in the user message, or both. Each placement is its own baseline in results.csv.
+prompting:
+  placements: [system, user]
+  user_template: "{instruction}\n\n{prompt}"
+
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+  seed: 0
+
+# Checked on Hugging Face, 14 Oct 2026. All resolve. The DistilBERT ID is the canonical
+# form of distilbert-base-uncased-finetuned-sst-2-english (a redirect, same model).
+scorers:
+  a: cardiffnlp/twitter-xlm-roberta-base-sentiment
+  b:
+    en: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+    ar: CAMeL-Lab/bert-base-arabic-camelbert-mix-sentiment
+
+paths:
+  pairs: data/pairs.jsonl
+  prompts: data/prompts.jsonl
+  reference: data/reference.jsonl
+  instructions: data/instructions.jsonl
+  results_csv: results/results.csv
+  samples: results/samples.jsonl
+  figures: results/figures
+
+# Reduced grid for the phase 3 smoke test on the dev model, on CPU.
+smoke:
+  layers: [6, 12]
+  strengths: [-1.0, 0.0, 1.0]
+  seeds: [0]
+  n_prompts: 4
+
+# Figures (spec section 6). File names are written under paths.figures.
+plots:
+  dpi: 150
+  figure_files:
+    dose_response: fig1_dose_response.png
+    transfer_ratio: fig2_transfer_ratio.png
+    trade_off: fig3_trade_off.png
+    split_half: fig4_split_half_stability.png
+    steering_vs_baselines: fig5_steering_vs_baselines.png

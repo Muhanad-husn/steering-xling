@@ -3,6 +3,7 @@
 import contextlib
 import math
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
@@ -65,7 +66,7 @@ def test_scores_stay_in_range_for_mixed_probabilities() -> None:
 
 
 def test_bootstrap_contains_mean_and_is_deterministic() -> None:
-    cfg = load_config("config.yaml").bootstrap
+    cfg = load_config(Path(__file__).resolve().parent.parent / "config.yaml").bootstrap
     values = [0.1, 0.4, -0.2, 0.9, 0.3, -0.5, 0.0]
     a = bootstrap_ci(values, cfg.n_resamples, cfg.ci, cfg.seed)
     b = bootstrap_ci(values, cfg.n_resamples, cfg.ci, cfg.seed)

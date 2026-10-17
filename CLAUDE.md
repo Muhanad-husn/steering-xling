@@ -57,9 +57,9 @@ The spec states intent. It does not outrank common sense.
   - the vector has shape `[d_model]` per layer, and its unit version has norm 1;
   - sentiment scores stay in [-1, 1], and Arabic-script share and distinct-bigram share
     stay in [0, 1].
-- **Test command:** `python -m pytest -q`, as recorded in `aeo-tests.json`. A pull request
+- **Test command:** `python -m pytest -q`, as run by CI (`.github/workflows/tests.yml`). A pull request
   is green before it is proposed.
-- **Python 3.11+, typed, minimal dependencies.** PyTorch, transformers, pandas, matplotlib
+- **Python 3.12+, typed, minimal dependencies.** PyTorch, transformers, pandas, matplotlib
   and pyyaml, with plain forward hooks. No TransformerLens. Versions are pinned in
   `requirements.txt`.
 - **No magic numbers in code.** Model, layers, strengths, seeds, sampling settings and

@@ -112,8 +112,8 @@ Noise floors are A 0.04 and B 0.05. Baseline perplexity is 12.3 and Arabic share
 - **Q3, where does fluency break?** Beyond ±1 at layers 12 and 16, and earlier elsewhere. In Arabic, output leaves the language at -0.5.
 - **Q4, steering or prompting?** On this model, prompting is stronger in both languages and costs no fluency.
 
-## Next steps (not started; each needs the founder's decision)
-- Run random directions at L16, and several random draws at L12, to test whether the pass is specific to sentiment.
+## Next steps (not started)
+- Run the random direction at L16, and the finer layers 10, 14 and 18, to test whether the pass is specific to sentiment. Decided on 17 Oct 2026; ready in `config.followup.yaml`, not yet run. Several random draws at L12 were dropped.
 - Run on a larger or more Arabic-capable model (Gemma 2 2B, spec §3).
 
 ## Figures
