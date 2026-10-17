@@ -1,0 +1,18 @@
+condition,good_or_acceptable_of_5,positive,neutral,negative,unreadable
+sentiment layer=12 strength=+0,2,1,3,0,1
+sentiment layer=12 strength=+0.25,1,1,3,0,1
+sentiment layer=12 strength=+0.5,2,3,1,0,1
+sentiment layer=12 strength=+1,1,2,2,0,1
+sentiment layer=12 strength=-0.25,4,0,4,1,0
+sentiment layer=12 strength=-0.5,1,0,0,0,5
+sentiment layer=16 strength=+0.25,2,2,2,1,0
+sentiment layer=16 strength=+0.5,4,3,2,0,0
+sentiment layer=16 strength=+1,1,2,1,0,2
+sentiment layer=16 strength=-0.25,3,2,1,1,1
+sentiment layer=16 strength=-0.5,0,0,0,0,5
+random layer=12 strength=+0.5,3,3,0,1,1
+random layer=12 strength=-0.5,2,0,3,0,2
+prompt_neg_system,3,0,0,4,1
+prompt_neg_user,3,0,0,5,0
+prompt_pos_system,5,3,2,0,0
+prompt_pos_user,4,3,1,0,1

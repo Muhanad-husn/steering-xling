@@ -1,86 +1,86 @@
 ﻿id,prompt_id,quality,tone,note
-R001,q07,acceptable,neutral,a bit out of topic but within the domain.
-R002,q25,good,positive,
-R003,q19,bad,positive,out of topic but within the domain
-R004,q25,acceptable,positive,incomplete answer.
-R005,q25,good,positive,incomplete answer
-R006,q07,bad,neutral,"within the domain, but the logic is totally wrong"
-R007,q13,acceptable,neutral,
-R008,q01,bad,positive,
-R009,q01,acceptable,neutral,"incomplete answer,"
-R010,q01,bad,neutral,"withing the domain but the logic is wrong, incomplete"
-R011,q13,acceptable,negative,
-R012,q01,,,
-R013,q13,,,
-R014,q19,,,
-R015,q25,,,
-R016,q25,,,
-R017,q13,,,
-R018,q19,,,
-R019,q13,,,
-R020,q07,,,
-R021,q07,,,
-R022,q01,,,
-R023,q07,,,
-R024,q01,,,
-R025,q19,,,
-R026,q13,,,
-R027,q13,,,
-R028,q01,,,
-R029,q01,,,
-R030,q25,,,
-R031,q19,,,
-R032,q07,,,
-R033,q13,,,
-R034,q25,,,
-R035,q25,,,
-R036,q01,,,
-R037,q19,,,
-R038,q13,,,
-R039,q07,,,
-R040,q01,,,
-R041,q07,,,
-R042,q19,,,
-R043,q25,,,
-R044,q13,,,
-R045,q19,,,
-R046,q01,,,
-R047,q07,,,
-R048,q01,,,
-R049,q07,,,
-R050,q19,,,
-R051,q25,,,
-R052,q19,,,
-R053,q07,,,
-R054,q25,,,
-R055,q01,,,
-R056,q07,,,
-R057,q19,,,
-R058,q19,,,
-R059,q19,,,
-R060,q13,,,
-R061,q25,,,
-R062,q01,,,
-R063,q07,,,
-R064,q25,,,
-R065,q01,,,
-R066,q13,,,
-R067,q13,,,
-R068,q13,,,
-R069,q07,,,
-R070,q01,,,
-R071,q25,,,
-R072,q13,,,
-R073,q19,,,
-R074,q25,,,
-R075,q07,,,
-R076,q19,,,
-R077,q25,,,
-R078,q01,,,
-R079,q25,,,
-R080,q13,,,
-R081,q13,,,
-R082,q07,,,
-R083,q19,,,
-R084,q19,,,
-R085,q07,,,
+"R001","q07","acceptable","neutral","a bit out of topic but within the domain."
+"R002","q25","good","positive",""
+"R003","q19","bad","positive","out of topic but within the domain"
+"R004","q25","acceptable","positive","incomplete answer."
+"R005","q25","good","positive","incomplete answer"
+"R006","q07","bad","neutral","within the domain, but the logic is totally wrong"
+"R007","q13","acceptable","neutral",""
+"R008","q01","bad","positive",""
+"R009","q01","acceptable","neutral","incomplete answer,"
+"R010","q01","bad","neutral","withing the domain but the logic is wrong, incomplete"
+"R011","q13","acceptable","negative",""
+"R012","q01","bad","positive","incomplete answer"
+"R013","q13","bad","negative","incomplete answer"
+"R014","q19","good","negative","incomplete answer"
+"R015","q25","acceptable","neutral",""
+"R016","q25","good","negative",""
+"R017","q13","very bad","unreadable","the quality is good and the Answer is complete but it's in ENGLISH "
+"R018","q19","acceptable","neutral","incomplete answer"
+"R019","q13","good","neutral","it gave 3 sentences no 2. "
+"R020","q07","bad","neutral","the domain is correct, the answer is wrong"
+"R021","q07","very bad","neutral","the domain is correct, the answer is wrong"
+"R022","q01","acceptable","negative","incomplete answer "
+"R023","q07","acceptable","neutral","incomplete answer "
+"R024","q01","acceptable","positive","1 sentence, requested 2"
+"R025","q19","very bad","unreadable","the quality is good and the Answer is complete but it's in ENGLISH "
+"R026","q13","bad","unreadable","mixed tune, positive and negative "
+"R027","q13","acceptable","neutral","incomplete answer, though the 1 sentence is actually good"
+"R028","q01","very bad","negative","1 out of 2 sentences "
+"R029","q01","acceptable","unreadable","the quality is good and the Answer is complete but it's in ENGLISH "
+"R030","q25","bad","positive",""
+"R031","q19","good","neutral","incomplete answer, little Chinese in the response"
+"R032","q07","bad","unreadable",""
+"R033","q13","very bad","unreadable",""
+"R034","q25","very bad","unreadable","Chinese"
+"R035","q25","acceptable","positive","some Chinese, incomplete response (1 out of 2 sentences)"
+"R036","q01","good","positive",""
+"R037","q19","good","positive",""
+"R038","q13","very bad","unreadable",""
+"R039","q07","very bad","unreadable","the quality is good and the Answer is complete but it's in ENGLISH "
+"R040","q01","acceptable","unreadable",""
+"R041","q07","very bad","negative",""
+"R042","q19","good","neutral","3 sentence, asked for 2"
+"R043","q25","very bad","negative",""
+"R044","q13","good","negative","incomplete response"
+"R045","q19","bad","neutral",""
+"R046","q01","very bad","unreadable","Chinese"
+"R047","q07","very bad","negative",""
+"R048","q01","acceptable","neutral","incomplete response"
+"R049","q07","bad","neutral",""
+"R050","q19","acceptable","positive","incomplete response"
+"R051","q25","very bad","unreadable","English"
+"R052","q19","good","positive","incomplete response"
+"R053","q07","very bad","unreadable",""
+"R054","q25","good","negative",""
+"R055","q01","very bad","positive",""
+"R056","q07","very bad","unreadable",""
+"R057","q19","bad","unreadable",""
+"R058","q19","bad","neutral",""
+"R059","q19","acceptable","neutral",""
+"R060","q13","very bad","unreadable",""
+"R061","q25","very bad","unreadable","English "
+"R062","q01","good","positive","incomplete response"
+"R063","q07","very bad","neutral",""
+"R064","q25","bad","unreadable",""
+"R065","q01","very bad","positive",""
+"R066","q13","acceptable","positive",""
+"R067","q13","good","neutral",""
+"R068","q13","bad","neutral",""
+"R069","q07","very bad","unreadable",""
+"R070","q01","good","positive",""
+"R071","q25","acceptable","positive","incomplete response 1 of 2 "
+"R072","q13","very bad","unreadable","English"
+"R073","q19","good","negative",""
+"R074","q25","acceptable","positive","1 / 2"
+"R075","q07","very bad","unreadable","English"
+"R076","q19","bad","unreadable",""
+"R077","q25","good","positive",""
+"R078","q01","acceptable","positive",""
+"R079","q25","acceptable","positive","incomplete response"
+"R080","q13","bad","positive",""
+"R081","q13","very bad","negative",""
+"R082","q07","very bad","positive",""
+"R083","q19","acceptable","neutral",""
+"R084","q19","bad","neutral",""
+"R085","q07","good","neutral",""

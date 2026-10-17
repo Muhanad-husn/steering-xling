@@ -1,0 +1,86 @@
+id,prompt_id,quality,tone,note,cond,q
+R001,q07,acceptable,neutral,a bit out of topic but within the domain.,prompt_pos_user,2
+R002,q25,good,positive,,sentiment layer=16 strength=+0.25,3
+R003,q19,bad,positive,out of topic but within the domain,sentiment layer=12 strength=+1,1
+R004,q25,acceptable,positive,incomplete answer.,sentiment layer=16 strength=-0.25,2
+R005,q25,good,positive,incomplete answer,sentiment layer=16 strength=+1,3
+R006,q07,bad,neutral,"within the domain, but the logic is totally wrong",sentiment layer=16 strength=+0.25,1
+R007,q13,acceptable,neutral,,sentiment layer=16 strength=+0.5,2
+R008,q01,bad,positive,,sentiment layer=16 strength=+1,1
+R009,q01,acceptable,neutral,"incomplete answer,",sentiment layer=12 strength=+0.5,2
+R010,q01,bad,neutral,"withing the domain but the logic is wrong, incomplete",sentiment layer=12 strength=+0,1
+R011,q13,acceptable,negative,,random layer=12 strength=+0.5,2
+R012,q01,bad,positive,incomplete answer,sentiment layer=12 strength=+0.25,1
+R013,q13,bad,negative,incomplete answer,sentiment layer=16 strength=+0.25,1
+R014,q19,good,negative,incomplete answer,prompt_neg_system,3
+R015,q25,acceptable,neutral,,sentiment layer=12 strength=+1,2
+R016,q25,good,negative,,prompt_neg_system,3
+R017,q13,very bad,unreadable,the quality is good and the Answer is complete but it's in ENGLISH ,sentiment layer=12 strength=-0.5,0
+R018,q19,acceptable,neutral,incomplete answer,sentiment layer=12 strength=-0.25,2
+R019,q13,good,neutral,it gave 3 sentences no 2. ,random layer=12 strength=-0.5,3
+R020,q07,bad,neutral,"the domain is correct, the answer is wrong",sentiment layer=12 strength=+0,1
+R021,q07,very bad,neutral,"the domain is correct, the answer is wrong",sentiment layer=12 strength=+0.25,0
+R022,q01,acceptable,negative,incomplete answer ,prompt_neg_system,2
+R023,q07,acceptable,neutral,incomplete answer ,sentiment layer=12 strength=-0.25,2
+R024,q01,acceptable,positive,"1 sentence, requested 2",prompt_pos_system,2
+R025,q19,very bad,unreadable,the quality is good and the Answer is complete but it's in ENGLISH ,sentiment layer=16 strength=-0.5,0
+R026,q13,bad,unreadable,"mixed tune, positive and negative ",prompt_neg_system,1
+R027,q13,acceptable,neutral,"incomplete answer, though the 1 sentence is actually good",sentiment layer=12 strength=+0,2
+R028,q01,very bad,negative,1 out of 2 sentences ,prompt_neg_user,0
+R029,q01,acceptable,unreadable,the quality is good and the Answer is complete but it's in ENGLISH ,sentiment layer=12 strength=-0.5,2
+R030,q25,bad,positive,,sentiment layer=12 strength=+0.5,1
+R031,q19,good,neutral,"incomplete answer, little Chinese in the response",sentiment layer=12 strength=+0.25,3
+R032,q07,bad,unreadable,,sentiment layer=16 strength=-0.25,1
+R033,q13,very bad,unreadable,,sentiment layer=16 strength=+1,0
+R034,q25,very bad,unreadable,Chinese,random layer=12 strength=-0.5,0
+R035,q25,acceptable,positive,"some Chinese, incomplete response (1 out of 2 sentences)",prompt_pos_user,2
+R036,q01,good,positive,,prompt_pos_user,3
+R037,q19,good,positive,,sentiment layer=12 strength=+0.5,3
+R038,q13,very bad,unreadable,,sentiment layer=12 strength=+1,0
+R039,q07,very bad,unreadable,the quality is good and the Answer is complete but it's in ENGLISH ,sentiment layer=12 strength=-0.5,0
+R040,q01,acceptable,unreadable,,random layer=12 strength=-0.5,2
+R041,q07,very bad,negative,,prompt_neg_user,0
+R042,q19,good,neutral,"3 sentence, asked for 2",sentiment layer=16 strength=+0.5,3
+R043,q25,very bad,negative,,sentiment layer=12 strength=-0.25,0
+R044,q13,good,negative,incomplete response,prompt_neg_user,3
+R045,q19,bad,neutral,,random layer=12 strength=-0.5,1
+R046,q01,very bad,unreadable,Chinese,sentiment layer=16 strength=-0.5,0
+R047,q07,very bad,negative,,prompt_neg_system,0
+R048,q01,acceptable,neutral,incomplete response,sentiment layer=12 strength=-0.25,2
+R049,q07,bad,neutral,,sentiment layer=12 strength=+1,1
+R050,q19,acceptable,positive,incomplete response,random layer=12 strength=+0.5,2
+R051,q25,very bad,unreadable,English,sentiment layer=12 strength=-0.5,0
+R052,q19,good,positive,incomplete response,prompt_pos_user,3
+R053,q07,very bad,unreadable,,random layer=12 strength=+0.5,0
+R054,q25,good,negative,,prompt_neg_user,3
+R055,q01,very bad,positive,,random layer=12 strength=+0.5,0
+R056,q07,very bad,unreadable,,sentiment layer=12 strength=+0.5,0
+R057,q19,bad,unreadable,,sentiment layer=12 strength=+0,1
+R058,q19,bad,neutral,,sentiment layer=16 strength=+0.25,1
+R059,q19,acceptable,neutral,,prompt_pos_system,2
+R060,q13,very bad,unreadable,,prompt_pos_user,0
+R061,q25,very bad,unreadable,English ,sentiment layer=16 strength=-0.5,0
+R062,q01,good,positive,incomplete response,sentiment layer=16 strength=+0.5,3
+R063,q07,very bad,neutral,,random layer=12 strength=-0.5,0
+R064,q25,bad,unreadable,,sentiment layer=12 strength=+0.25,1
+R065,q01,very bad,positive,,sentiment layer=12 strength=+1,0
+R066,q13,acceptable,positive,,prompt_pos_system,2
+R067,q13,good,neutral,,sentiment layer=12 strength=-0.25,3
+R068,q13,bad,neutral,,sentiment layer=12 strength=+0.25,1
+R069,q07,very bad,unreadable,,sentiment layer=16 strength=+1,0
+R070,q01,good,positive,,sentiment layer=16 strength=+0.25,3
+R071,q25,acceptable,positive,incomplete response 1 of 2 ,random layer=12 strength=+0.5,2
+R072,q13,very bad,unreadable,English,sentiment layer=16 strength=-0.5,0
+R073,q19,good,negative,,prompt_neg_user,3
+R074,q25,acceptable,positive,1 / 2,sentiment layer=16 strength=+0.5,2
+R075,q07,very bad,unreadable,English,sentiment layer=16 strength=-0.5,0
+R076,q19,bad,unreadable,,sentiment layer=12 strength=-0.5,1
+R077,q25,good,positive,,sentiment layer=12 strength=+0,3
+R078,q01,acceptable,positive,,sentiment layer=16 strength=-0.25,2
+R079,q25,acceptable,positive,incomplete response,prompt_pos_system,2
+R080,q13,bad,positive,,sentiment layer=12 strength=+0.5,1
+R081,q13,very bad,negative,,sentiment layer=16 strength=-0.25,0
+R082,q07,very bad,positive,,sentiment layer=16 strength=+0.5,0
+R083,q19,acceptable,neutral,,sentiment layer=16 strength=-0.25,2
+R084,q19,bad,neutral,,sentiment layer=16 strength=+1,1
+R085,q07,good,neutral,,prompt_pos_system,3
