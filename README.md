@@ -12,7 +12,7 @@ A small, complete and honestly reported activation-steering experiment, run in O
 | The design, with dated amendments | `docs/steering_experiment_spec.md` |
 | Rules the experiment is held to, including the kill line | `RULES.md` |
 | Phases and status | `PLAN.md` |
-| Every setting | `config.yaml` |
+| Every setting | `config.yaml` (first pass); `config.followup.yaml` (second pass: finer layers, random control at layer 16) |
 | Code | `src/` (`extract.py`, `steer.py`, `score.py`, `run_sweep.py`, `plots.py`) |
 | Tests (CPU, tiny random model, no downloads) | `tests/` |
 | Data (model-generated, test-checked) | `data/` |
@@ -35,6 +35,7 @@ python -m src.plots --csv results/results.csv --out results/figures
 
 - `run_sweep` takes `--grid full|smoke` (default `full`) and `--model dev|main` (default: `dev` for smoke, `main` for full). It downloads the model and scorers from Hugging Face, uses a GPU when one is present, and writes `results/results.csv` and `results/samples.jsonl`. A rerun skips every condition already in the CSV, so it resumes after a crash.
 - The full sweep took 5.6 hours on a Colab T4. `notebooks/colab.ipynb` runs it there and keeps the results in Google Drive.
+- The second pass runs with `--config config.followup.yaml`. It uses the same fingerprint, so starting from the committed `results/results.csv` adds only the new conditions.
 - `plots` reads only the CSV and needs no GPU. It reads `config.yaml` from the repository root. `--model` and `--fingerprint` are needed only when the CSV holds rows from more than one model or settings fingerprint.
 
 ## How it was built

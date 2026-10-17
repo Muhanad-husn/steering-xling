@@ -10,7 +10,7 @@ import pytest
 
 import src.run_sweep as run_sweep_mod
 from src.config import Config, SamplingConfig, load_config
-from src.run_sweep import Grid, SweepData, fingerprint, grid_for, model_id_for, prompting_types, run_sweep
+from src.run_sweep import Grid, SweepData, fingerprint, grid_for, load_data, model_id_for, prompting_types, run_sweep
 from src.schema import KEY_COLUMNS, MEASURE_COLUMNS, STABILITY_COLUMNS, condition_key
 
 MODEL_NAME = "tiny"
@@ -283,3 +283,19 @@ def test_model_id_defaults_to_dev_for_smoke_and_main_for_full(cfg) -> None:
     # The T4 smoke run uses the smoke grid on the main model.
     assert model_id_for(cfg, smoke=True, choice="main") == cfg.model.id
     assert model_id_for(cfg, smoke=False, choice="dev") == cfg.model.dev_id
+
+
+def test_followup_config_adds_layers_under_the_first_pass_fingerprint() -> None:
+    """config.followup.yaml changes only what the fingerprint leaves out, so its run extends the first pass."""
+    root = Path(__file__).resolve().parents[1]
+    first = load_config(root / "config.yaml")
+    followup = load_config(root / "config.followup.yaml")
+    assert set(first.layers) < set(followup.layers)
+    assert followup.random_direction.layer not in (None, first.random_direction.layer)
+    same = dataclasses.replace(
+        followup,
+        layers=first.layers,
+        random_direction=dataclasses.replace(followup.random_direction, layer=first.random_direction.layer),
+    )
+    assert same == first
+    assert fingerprint(followup, load_data(followup)) == fingerprint(first, load_data(first))
