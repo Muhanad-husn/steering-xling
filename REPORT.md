@@ -91,7 +91,7 @@ Noise floors are A 0.04 and B 0.05. Baseline perplexity is 12.3 and Arabic share
 ### What did not work
 - No negative steering in Arabic at any strength: the language goes before the tone.
 - Strength ±2 breaks the output at every layer.
-- **Figures 2 and 5 are drawn at strength 2.** `plots.py` uses the largest strength, where every layer's output is broken, so the transfer ratios in figure 2 (from -4.6 to 6.0) mean nothing. The tables above use strengths under 2x perplexity instead. **Pending the founder's decision** on which strength these figures should use.
+- **The first draw of figures 2 and 5 used strength 2.** `plots.py` took the largest strength, where every layer's output is broken, which gave transfer ratios from -4.6 to 6.0. On the founder's decision (17 Oct 2026), they now use the kill line's 2x limit: for each layer, the largest positive strength whose English perplexity stays under 2x baseline.
 - **Time.** The sweep took 5.6 hours on the T4, against the spec's target of under 2 hours.
 
 ## Example generations (seed 0, the bread prompt in English, founder's notes for Arabic)
@@ -114,13 +114,17 @@ Noise floors are A 0.04 and B 0.05. Baseline perplexity is 12.3 and Arabic share
 
 ## Next steps (not started; each needs the founder's decision)
 - Run random directions at L16, and several random draws at L12, to test whether the pass is specific to sentiment.
-- Choose the strength for figures 2 and 5, then redraw them.
 - Run on a larger or more Arabic-capable model (Gemma 2 2B, spec §3).
 
 ## Figures
 All five figures are drawn from `results/results.csv` with `python -m src.plots --csv results/results.csv --out results/figures`.
 1. `results/figures/fig1_dose_response.png`: sentiment against strength, per layer.
-2. `results/figures/fig2_transfer_ratio.png`: Arabic shift over English shift. Drawn at strength 2; see "What did not work".
-3. `results/figures/fig3_trade_off.png`: sentiment shift against perplexity increase. A few broken cells stretch the x-axis.
+2. `results/figures/fig2_transfer_ratio.png`: Arabic shift over English shift on scorer A, at each layer's largest strength under 2x perplexity.
+   - L12 is 0.3 and L16 is 0.9 (both at +1).
+   - L4 qualifies only at +0.25, where both languages move *negative* (en -0.08, ar -0.30): output damage, not transfer.
+   - At L20 (+0.5) and L24 (+0.25) English moves +0.08 and +0.04, and Arabic stays within its 0.04 floor (-0.02, -0.03). So the negative ratios there are no transfer, not reversed transfer.
+   - L8's English shift (+0.00) is within the noise floor, while Arabic falls -0.38.
+   - Scorer B gives different ratios (L12 0.8, L16 0.6), so the ratio is not stable across scorers.
+3. `results/figures/fig3_trade_off.png`: sentiment shift against perplexity increase, on a symlog x-axis.
 4. `results/figures/fig4_split_half_stability.png`: split-half cosine per layer.
-5. `results/figures/fig5_steering_vs_baselines.png`: steering, random direction and prompting at L12. Drawn at strength 2.
+5. `results/figures/fig5_steering_vs_baselines.png`: steering, random direction and prompting at L12, strength +1, with the noise floor as error bars.

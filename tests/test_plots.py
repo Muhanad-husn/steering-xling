@@ -220,6 +220,55 @@ def test_fingerprint_argument_and_cli_option_choose_one(tmp_path: Path, monkeypa
     assert len(list(out.glob("*.png"))) == 5
 
 
+def with_broken_top_strength(df: pd.DataFrame) -> pd.DataFrame:
+    """Add strength 2 rows whose perplexity is past 2x baseline and whose sentiment is extreme."""
+    top = df[df["vector_type"].isin(["sentiment", "random"]) & (df["strength"] == 1.0)].copy()
+    top["strength"] = 2.0
+    top["perplexity"] = 100.0
+    top["sentiment_a_mean"] = -0.9
+    top["sentiment_b_mean"] = -0.9
+    return pd.concat([df, top], ignore_index=True)
+
+
+def test_usable_strength_is_largest_under_the_perplexity_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    df = with_broken_top_strength(plots.read_results(write_csv(tmp_path)))
+    # Baseline perplexity 10; strength 1 gives 13 (under 2x), strength 2 gives 100.
+    assert plots.usable_strength(df, layer=4) == 1.0
+    df.loc[(df["layer"] == 4) & (df["strength"] == 1.0) & (df["lang"] == "en"), "perplexity"] = 25.0
+    assert math.isnan(plots.usable_strength(df, layer=4))  # no positive strength left under 2x
+
+
+def test_transfer_ratio_ignores_strengths_past_the_perplexity_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    df = with_broken_top_strength(plots.read_results(write_csv(tmp_path)))
+    table = plots.transfer_table(df).set_index("layer")
+    assert table.loc[4, "strength"] == 1.0
+    assert table.loc[4, "ratio"] == pytest.approx(0.2 / 0.4)
+
+
+def test_figure_five_ignores_strengths_past_the_perplexity_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plots = load_plots(monkeypatch)
+    df = with_broken_top_strength(plots.read_results(write_csv(tmp_path)))
+    table = plots.baseline_table(df, layer=None)
+    en = table[(table["lang"] == "en") & (table["scorer"] == "A")].set_index("method")
+    assert en.loc["steering", "strength"] == 1.0
+    assert en.loc["steering", "shift"] == pytest.approx(0.4)
+    assert en.loc["random", "shift"] == pytest.approx(0.02)  # same strength as steering
+
+
+def test_trade_off_uses_a_symlog_perplexity_axis(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    plots = load_plots(monkeypatch)
+    fig = plots.trade_off(plots.read_results(write_csv(tmp_path)))
+    assert {ax.get_xscale() for ax in fig.axes} == {"symlog"}
+
+
 def test_failing_figure_does_not_stop_the_others(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

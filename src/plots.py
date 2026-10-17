@@ -6,6 +6,7 @@ src.config (which needs torch) is not required.
 """
 
 import argparse
+import math
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -31,6 +32,9 @@ NOISE_FLOOR_LABEL = "noise floor (std at strength 0)"
 LANGS = ("en", "ar")
 PROMPT_METHODS = ("prompt_pos_system", "prompt_neg_system", "prompt_pos_user", "prompt_neg_user")
 BASELINE_METHODS = ("steering", "random", *PROMPT_METHODS)
+# The kill line's own limit (RULES.md): perplexity under 2x baseline. Not a tunable setting, so it
+# is not in config.yaml; figures 2 and 5 use it to pick a strength (founder decision, 17 Oct 2026).
+KILL_LINE_PERPLEXITY_RATIO = 2.0
 
 
 def _config() -> dict[str, Any]:
@@ -77,6 +81,17 @@ def _mean_by(df: pd.DataFrame, by: list[str], column: str = SENTIMENT) -> pd.Ser
     return df.groupby(by)[column].mean()
 
 
+def usable_strength(df: pd.DataFrame, layer: int, ratio: float = KILL_LINE_PERPLEXITY_RATIO) -> float:
+    """Largest positive strength at this layer whose English perplexity is under `ratio` x strength 0.
+
+    NaN when no positive strength qualifies.
+    """
+    sent = _sentiment(df)
+    ppl = sent[(sent["layer"] == layer) & (sent["lang"] == "en")].groupby("strength")["perplexity"].mean()
+    usable = ppl[(ppl.index > 0) & (ppl < ratio * ppl.loc[0.0])]
+    return float(usable.index.max()) if len(usable) else float("nan")
+
+
 def dose_response(df: pd.DataFrame) -> Figure:
     sent = _sentiment(df)
     fig, axes = plt.subplots(len(SCORERS), 2, figsize=(10, 7), sharey=True, sharex=True, squeeze=False)
@@ -100,18 +115,22 @@ def dose_response(df: pd.DataFrame) -> Figure:
 
 
 def transfer_table(df: pd.DataFrame) -> pd.DataFrame:
-    """Per layer: shift at the largest strength, minus strength 0, in each language.
+    """Per layer: shift at the usable strength, minus strength 0, in each language.
 
-    The ratio is Arabic shift over English shift; it is NaN when the English shift is not
-    larger than the English noise floor.
+    The usable strength is the largest one under the perplexity limit (`usable_strength`).
+    The ratio is Arabic shift over English shift; it is NaN when no strength is usable or the
+    English shift is not larger than the English noise floor.
     """
     sent = _sentiment(df)
-    top = float(sent["strength"].max())
     mean = _mean_by(sent, ["layer", "lang", "strength"])
+    floor_en = noise_floor(df, "en")
     rows = []
     for layer in sorted(sent["layer"].dropna().unique()):
-        shift = {lang: float(mean[(layer, lang, top)] - mean[(layer, lang, 0.0)]) for lang in LANGS}
-        floor_en = noise_floor(df, "en")
+        top = usable_strength(df, int(layer))
+        if math.isnan(top):
+            shift = {lang: float("nan") for lang in LANGS}
+        else:
+            shift = {lang: float(mean[(layer, lang, top)] - mean[(layer, lang, 0.0)]) for lang in LANGS}
         ratio = shift["ar"] / shift["en"] if abs(shift["en"]) > floor_en else float("nan")
         rows.append(
             {"layer": int(layer), "strength": top, "shift_en": shift["en"], "shift_ar": shift["ar"],
@@ -129,10 +148,14 @@ def transfer_ratio(df: pd.DataFrame) -> Figure:
     for i, ratio in enumerate(table["ratio"]):
         if pd.isna(ratio):
             ax.text(i, 0, "undefined\n(English shift\nwithin noise)", ha="center", va="bottom", fontsize=7)
-    ax.set_xticks(x, table["layer"].astype(str))
+    ticks = [
+        f"{layer}\n(none)" if pd.isna(s) else f"{layer}\n({s:+g})"
+        for layer, s in zip(table["layer"], table["strength"], strict=True)
+    ]
+    ax.set_xticks(x, ticks)
     ax.axhline(1.0, color="grey", linestyle="--", linewidth=1)
-    ax.set_xlabel("layer")
-    ax.set_ylabel(f"Arabic shift / English shift (strength {table['strength'].iloc[0]:g})")
+    ax.set_xlabel("layer (strength: largest under the perplexity limit)")
+    ax.set_ylabel("Arabic shift / English shift")
     fig.tight_layout()
     return fig
 
@@ -147,7 +170,9 @@ def trade_off(df: pd.DataFrame) -> Figure:
             ax.plot(m["perplexity"] - m.loc[0.0, "perplexity"], m[SENTIMENT] - m.loc[0.0, SENTIMENT],
                     marker="o", label=f"layer {int(layer)}")  # fmt: skip
         ax.set_title(lang)
-        ax.set_xlabel("perplexity increase over strength 0")
+        # A few broken cells reach perplexity in the millions; symlog keeps the usable window visible.
+        ax.set_xscale("symlog", linthresh=1.0)
+        ax.set_xlabel("perplexity increase over strength 0 (symlog)")
     axes[0].set_ylabel("sentiment shift over strength 0")
     axes[1].legend(fontsize=7)
     fig.tight_layout()
@@ -170,15 +195,18 @@ def split_half(df: pd.DataFrame) -> Figure:
 def baseline_table(df: pd.DataFrame, layer: int | None) -> pd.DataFrame:
     """Sentiment shift over the strength-0 mean, per language, scorer and method.
 
-    Steering and random use the largest strength. The layer is the one the random control
-    was run at unless given. Prompting rows have no layer or strength.
+    Steering and random both use the steering vector's usable strength at that layer
+    (`usable_strength`). The layer is the one the random control was run at unless given.
+    Prompting rows have no layer or strength.
     """
     if layer is None:
         rand_layers = df[df["vector_type"] == "random"]["layer"].dropna().unique()
         if len(rand_layers) != 1:
             raise ValueError(f"cannot pick the layer: random control found at {sorted(rand_layers)}; pass --layer")
         layer = int(rand_layers[0])
-    top = float(_sentiment(df)["strength"].max())
+    top = usable_strength(df, layer)
+    if math.isnan(top):
+        raise ValueError(f"no positive strength at layer {layer} is under the perplexity limit")
     rows = []
     for lang in LANGS:
         sent = _sentiment(df)
@@ -195,7 +223,7 @@ def baseline_table(df: pd.DataFrame, layer: int | None) -> pd.DataFrame:
                 values[method] = float(df[(df["vector_type"] == method) & (df["lang"] == lang)][column].mean())
             for method in BASELINE_METHODS:
                 rows.append({"lang": lang, "scorer": scorer, "method": method, "shift": values[method] - base,
-                             "noise": floor, "layer": layer})  # fmt: skip
+                             "noise": floor, "layer": layer, "strength": top})  # fmt: skip
     return pd.DataFrame(rows)
 
 
@@ -212,7 +240,7 @@ def steering_vs_baselines(df: pd.DataFrame, layer: int | None = None) -> Figure:
                    capsize=3, label=f"scorer {scorer}")  # fmt: skip
         ax.set_xticks(x, list(BASELINE_METHODS))
         ax.axhline(0.0, color="black", linewidth=0.8)
-        ax.set_title(f"{lang}, layer {int(sub['layer'].iloc[0])}")
+        ax.set_title(f"{lang}, layer {int(sub['layer'].iloc[0])}, strength {sub['strength'].iloc[0]:+g}")
         ax.tick_params(axis="x", labelrotation=30)
     axes[0].set_ylabel("sentiment shift over strength 0 (bars: noise floor)")
     axes[1].legend(fontsize=7)
