@@ -1,0 +1,5 @@
+[transformers] You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+
+real	336m35.266s
+user	335m26.298s
+sys	0m24.802s
