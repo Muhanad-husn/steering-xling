@@ -59,7 +59,7 @@ The spec states intent. It does not outrank common sense.
     stay in [0, 1].
 - **Test command:** `python -m pytest -q`, as recorded in `aeo-tests.json`. A pull request
   is green before it is proposed.
-- **Python 3.11+, typed, minimal dependencies.** PyTorch, transformers, pandas, matplotlib
+- **Python 3.12+, typed, minimal dependencies.** PyTorch, transformers, pandas, matplotlib
   and pyyaml, with plain forward hooks. No TransformerLens. Versions are pinned in
   `requirements.txt`.
 - **No magic numbers in code.** Model, layers, strengths, seeds, sampling settings and

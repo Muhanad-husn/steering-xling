@@ -118,7 +118,10 @@ steering-xling/
 
 ## 8. Requirements for Claude Code
 
-- Python 3.11+, typed, minimal dependencies, all settings in `config.yaml`, fixed seeds, library versions pinned in `requirements.txt`.
+- Python 3.12+, typed, minimal dependencies, all settings in `config.yaml`, fixed seeds, library versions pinned in `requirements.txt`.
+
+> **Amended 17 Oct 2026.** Python 3.12+, not 3.11+. The pinned `numpy==2.5.4` publishes no wheels for Python 3.11, so the pinned set cannot install there. The founder agreed the change. No result depends on it.
+
 - Unit tests that run on CPU with a tiny randomly initialised model: the hook changes the output only when the strength is non-zero, the vector has the right shape, and the scores stay in range.
 - The sweep can resume after a crash (skip conditions already in the CSV).
 - Every figure is regenerated from `results.csv` alone.
