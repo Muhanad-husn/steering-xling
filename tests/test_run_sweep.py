@@ -7,7 +7,6 @@ from typing import Any
 
 import pandas as pd
 import pytest
-from transformers import PreTrainedTokenizerFast, Qwen2ForCausalLM
 
 import src.run_sweep as run_sweep_mod
 from src.config import Config, SamplingConfig, load_config

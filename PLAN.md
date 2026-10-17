@@ -24,8 +24,8 @@ Spec: `docs/steering_experiment_spec.md`. Oracle: the founder reads the results 
 | Phase | State | Score |
 |---|---|---|
 | 1. Data | done (#2) | 4 of 4 files |
-| 2. Code and tests | planned: #3–#8 (plans/code-and-tests/) | 0 of 6 modules |
-| 3. Smoke test | todo | not run |
-| 4. Full sweep | todo | not run |
-| 5. Read and report | todo | 0 of 5 checklist items |
-| 6. Phase 2 (optional) | todo | not started |
+| 2. Code and tests | done (#10, #12 to #15) | 5 of 5 modules, plus `config.yaml` |
+| 3. Smoke test | done (#14, #18) | 0.5B on CPU (`logs/2026-10-15-smoke/`), 1.5B on a T4 (`logs/2026-10-16-t4-smoke-1.5b/`) |
+| 4. Full sweep | done (#19), finer layer pass not run | 402 rows in 5.6 h, against a 2 h target (`logs/2026-10-17-t4-full-1.5b/`) |
+| 5. Read and report | done (#20) | `REPORT.md`, five figures; checklist above left for the founder to tick |
+| 6. Phase 2 (optional) | not started | none |
