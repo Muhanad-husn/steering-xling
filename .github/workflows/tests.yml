@@ -1,4 +1,4 @@
-# Runs the CPU test suite (aeo-tests.json) on every pull request and on main.
+# Runs the CPU test suite (python -m pytest -q) on every pull request and on main.
 # The tests build a tiny random model in memory and download nothing.
 name: tests
 
