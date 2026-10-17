@@ -119,12 +119,27 @@ Noise floors are A 0.04 and B 0.05. Baseline perplexity is 12.3 and Arabic share
 ## Figures
 All five figures are drawn from `results/results.csv` with `python -m src.plots --csv results/results.csv --out results/figures`.
 1. `results/figures/fig1_dose_response.png`: sentiment against strength, per layer.
+
+   ![Figure 1: dose response](results/figures/fig1_dose_response.png)
+
 2. `results/figures/fig2_transfer_ratio.png`: Arabic shift over English shift on scorer A, at each layer's largest strength under 2x perplexity.
+
+   ![Figure 2: transfer ratio](results/figures/fig2_transfer_ratio.png)
+
    - L12 is 0.3 and L16 is 0.9 (both at +1).
    - L4 qualifies only at +0.25, where both languages move *negative* (en -0.08, ar -0.30): output damage, not transfer.
    - At L20 (+0.5) and L24 (+0.25) English moves +0.08 and +0.04, and Arabic stays within its 0.04 floor (-0.02, -0.03). So the negative ratios there are no transfer, not reversed transfer.
    - L8's English shift (+0.00) is within the noise floor, while Arabic falls -0.38.
    - Scorer B gives different ratios (L12 0.8, L16 0.6), so the ratio is not stable across scorers.
 3. `results/figures/fig3_trade_off.png`: sentiment shift against perplexity increase, on a symlog x-axis.
+
+   ![Figure 3: sentiment shift against perplexity](results/figures/fig3_trade_off.png)
+
 4. `results/figures/fig4_split_half_stability.png`: split-half cosine per layer.
+
+   ![Figure 4: split-half stability](results/figures/fig4_split_half_stability.png)
+
 5. `results/figures/fig5_steering_vs_baselines.png`: steering, random direction and prompting at L12, strength +1, with the noise floor as error bars.
+
+   ![Figure 5: steering against baselines](results/figures/fig5_steering_vs_baselines.png)
+
